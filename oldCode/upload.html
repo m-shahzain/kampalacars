@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Car</title>
+  <link rel="stylesheet" href="kampalacars.css">
+</head>
+<body>
+  <header>
+    <h1>Upload Your Car</h1>
+  </header>
+
+  <main>
+    <form id="uploadForm">
+      <input type="text" id="make" placeholder="Make" required><br>
+      <input type="text" id="model" placeholder="Model" required><br>
+      <input type="text" id="description" placeholder="Description" required><br>
+      <input type="number" id="price" placeholder="Price" required><br>
+      <input type="file" id="image" accept="image/*" required><br>
+      <button type="submit">Upload</button>
+    </form>
+  </main>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-storage-compat.js"></script>
+
+  <!-- Firebase Init -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBM_GjHzv5Z-1ZqbcCfnCySV_cFj2O5Rew",
+      authDomain: "kampalacars.firebaseapp.com",
+      projectId: "kampalacars",
+      storageBucket: "kampalacars.appspot.com",
+      messagingSenderId: "61614330009",
+      appId: "1:61614330009:web:2f5d3e04b0b1117274e808"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+  </script>
+
+  <!-- Upload Script -->
+  <script>
+    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const make = document.getElementById('make').value;
+      const model = document.getElementById('model').value;
+      const description = document.getElementById('description').value;
+      const price = parseFloat(document.getElementById('price').value);
+      const imageFile = document.getElementById('image').files[0];
+
+      if (!imageFile) return alert('Please upload an image.');
+
+      try {
+        const storageRef = storage.ref(`carImages/${Date.now()}_${imageFile.name}`);
+        const snapshot = await storageRef.put(imageFile);
+        const imageUrl = await snapshot.ref.getDownloadURL();
+
+        const user = auth.currentUser;
+        if (!user) return alert("You must be logged in as a seller.");
+
+        await db.collection("cars").add({
+          make,
+          model,
+          description,
+          price,
+          imageUrl,
+          sellerId: user.uid,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert("Car uploaded successfully!");
+        document.getElementById('uploadForm').reset();
+      } catch (error) {
+        console.error("Upload failed:", error);
+        alert("Upload failed. See console for error.");
+      }
+    });
+  </script>
+</body>
+</html>
