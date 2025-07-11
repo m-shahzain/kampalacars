@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from './ui/Button'
-import { Search, Car, User, LogOut, Plus } from 'lucide-react'
+import { Search, Car, User, LogOut, Plus, Shield } from 'lucide-react'
 import { useState } from 'react'
 
 export function Header() {
@@ -37,7 +37,7 @@ export function Header() {
             <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Search cars by make, model..."
+                placeholder="Search cars by brand, model..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full px-4 py-2.5 pl-10 pr-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -53,6 +53,16 @@ export function Header() {
           <nav className="flex items-center space-x-3">
             {user ? (
               <>
+                {/* Admin Dashboard Link - Only for admin users */}
+                {user.user_type === 'admin' && (
+                  <Link href="/admin">
+                    <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">
+                      <Shield className="h-4 w-4 mr-2" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                
                 <Link href="/dashboard">
                   <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
                     <User className="h-4 w-4 mr-2" />

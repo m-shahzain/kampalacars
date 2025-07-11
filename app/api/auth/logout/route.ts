@@ -7,7 +7,7 @@ export async function POST() {
     
     // Clear the session cookie
     cookieStore.delete('session')
-
+    
     return NextResponse.json({ message: 'Logged out successfully' })
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
