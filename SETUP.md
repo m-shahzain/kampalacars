@@ -23,14 +23,13 @@ Create a `.env.local` file in the root directory:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 ```
 
 ### 2. Set Up Supabase
 
 1. **Create Project**: Go to [supabase.com](https://supabase.com) and create a new project
-2. **Get API Keys**: Go to Settings > API and copy your URL and anon key
+2. **Get API Keys**: Go to Settings > API Keys and copy your URL and publishable key
 3. **Run Database Schema**: Copy and run the SQL from `lib/database.sql` in your Supabase SQL editor
 
 ### 3. Test the Application

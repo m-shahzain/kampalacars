@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
-import { CarBrand } from '@/lib/supabase'
+import { CarBrand } from '@/lib/types'
 import { Upload, DollarSign, Car, FileText, Calendar, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function UploadPage() {

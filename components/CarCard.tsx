@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
-import { CarWithBrand } from '@/lib/supabase'
+import { CarWithBrand } from '@/lib/types'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { Calendar, DollarSign, User, Phone } from 'lucide-react'
 

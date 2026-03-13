@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { Layout } from '@/components/Layout'
 import { CarCard } from '@/components/CarCard'
 import { Button } from '@/components/ui/Button'
-import { CarWithBrand } from '@/lib/supabase'
+import { CarWithBrand } from '@/lib/types'
 import { ChevronLeft, ChevronRight, Loader2, Car as CarIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 

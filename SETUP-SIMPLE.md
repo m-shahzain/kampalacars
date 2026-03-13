@@ -14,7 +14,7 @@
 ### 1. Create Your Supabase Project
 
 1. Go to [supabase.com](https://supabase.com) and create a new project
-2. Go to Settings > API and copy your project URL and anon key
+2. Go to Settings > API Keys and copy your project URL and publishable key
 
 ### 2. Environment Variables
 
@@ -22,7 +22,7 @@ Create a `.env.local` file:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 ```
 
 ### 3. Database Setup

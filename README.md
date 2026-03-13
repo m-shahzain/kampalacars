@@ -43,7 +43,7 @@ npm install
 ### 2. Set Up Supabase
 
 1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to Settings > API to get your project URL and anon key
+2. Go to Settings > API Keys to get your project URL and publishable key
 3. Go to Settings > Database and run the SQL schema from `lib/database.sql`
 
 ### 3. Environment Variables
@@ -52,8 +52,7 @@ Create a `.env.local` file in the root directory:
 
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key
 ```
 
 ### 4. Database Setup

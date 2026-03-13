@@ -1,4 +1,5 @@
 -- Sample data for Car Marketplace (Supabase/PostgreSQL)
+-- Run this AFTER database-supabase.sql
 
 -- Insert sample car brands
 INSERT INTO car_brands (brand_id, brand_name) VALUES
@@ -16,9 +17,10 @@ INSERT INTO car_brands (brand_id, brand_name) VALUES
 ('550e8400-e29b-41d4-a716-446655440012', 'Subaru'),
 ('550e8400-e29b-41d4-a716-446655440013', 'Chevrolet'),
 ('550e8400-e29b-41d4-a716-446655440014', 'Lexus'),
-('550e8400-e29b-41d4-a716-446655440015', 'Infiniti');
+('550e8400-e29b-41d4-a716-446655440015', 'Infiniti')
+ON CONFLICT (brand_id) DO NOTHING;
 
--- Insert sample users (Note: In production, use Supabase Auth instead)
+-- Insert sample users (plain text passwords as requested)
 INSERT INTO users (user_id, fullname, email, password, phone, user_type) VALUES
 ('550e8400-e29b-41d4-a716-446655440101', 'John Doe', 'john@example.com', 'password123', '+256701234567', 'seller'),
 ('550e8400-e29b-41d4-a716-446655440102', 'Jane Smith', 'jane@example.com', 'password123', '+256701234568', 'seller'),
@@ -29,7 +31,8 @@ INSERT INTO users (user_id, fullname, email, password, phone, user_type) VALUES
 ('550e8400-e29b-41d4-a716-446655440107', 'Mike Taylor', 'mike@example.com', 'password123', '+256701234573', 'admin'),
 ('550e8400-e29b-41d4-a716-446655440108', 'Lisa Garcia', 'lisa@example.com', 'password123', '+256701234574', 'seller'),
 ('550e8400-e29b-41d4-a716-446655440109', 'Tom Anderson', 'tom@example.com', 'password123', '+256701234575', 'seller'),
-('550e8400-e29b-41d4-a716-446655440110', 'Emma White', 'emma@example.com', 'password123', '+256701234576', 'buyer');
+('550e8400-e29b-41d4-a716-446655440110', 'Emma White', 'emma@example.com', 'password123', '+256701234576', 'buyer')
+ON CONFLICT (user_id) DO NOTHING;
 
 -- Insert sample cars
 INSERT INTO cars (car_id, seller_id, brand_id, model, title, description, body_type, fuel_type, year, price, currency, mileage, color, engine_size, transmission, features, image_url) VALUES
@@ -61,4 +64,5 @@ INSERT INTO cars (car_id, seller_id, brand_id, model, title, description, body_t
 
 ('550e8400-e29b-41d4-a716-446655440214', '550e8400-e29b-41d4-a716-446655440102', '550e8400-e29b-41d4-a716-446655440014', 'ES 350', '2022 Lexus ES 350 - Luxury Sedan', 'Luxurious 2022 Lexus ES 350 with premium comfort and advanced safety features.', 'sedan', 'gasoline', 2022, 41000.00, 'USD', 12000, 'Pearl White', '3.5L V6', 'automatic', 'Luxury package, Mark Levinson audio, Safety System 2.0', 'https://images.unsplash.com/photo-1563720360172-67b8f3dce741?w=800'),
 
-('550e8400-e29b-41d4-a716-446655440215', '550e8400-e29b-41d4-a716-446655440103', '550e8400-e29b-41d4-a716-446655440015', 'QX50 Essential', '2021 Infiniti QX50 Essential AWD', 'Innovative 2021 Infiniti QX50 with variable compression turbo engine.', 'suv', 'gasoline', 2021, 33500.00, 'USD', 22000, 'Black', '2.0L VC-Turbo', 'cvt', 'All-wheel drive, VC-Turbo engine, ProPILOT Assist, Bose audio', 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800'); 
+('550e8400-e29b-41d4-a716-446655440215', '550e8400-e29b-41d4-a716-446655440103', '550e8400-e29b-41d4-a716-446655440015', 'QX50 Essential', '2021 Infiniti QX50 Essential AWD', 'Innovative 2021 Infiniti QX50 with variable compression turbo engine.', 'suv', 'gasoline', 2021, 33500.00, 'USD', 22000, 'Black', '2.0L VC-Turbo', 'cvt', 'All-wheel drive, VC-Turbo engine, ProPILOT Assist, Bose audio', 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=800')
+ON CONFLICT (car_id) DO NOTHING;
