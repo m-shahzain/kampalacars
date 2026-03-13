@@ -2,7 +2,7 @@
 
 ## 🎉 Congratulations! Your car marketplace application is ready!
 
-I've successfully built a complete, modern car marketplace application with all the features from your old code and more. Here's what's been created:
+I've successfully built complete, modern car marketplace application with all the features from your old code and more. Here's what's been created:
 
 ### ✅ What's Complete:
 
