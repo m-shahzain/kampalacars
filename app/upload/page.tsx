@@ -40,6 +40,8 @@ export default function UploadPage() {
       router.push('/auth/login')
     } else if (user.user_type === 'admin') {
       router.push('/admin')
+    } else if (user.user_type === 'buyer') {
+      router.push('/dashboard')
     } else {
       fetchBrands()
     }
