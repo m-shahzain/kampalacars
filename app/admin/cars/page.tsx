@@ -30,11 +30,29 @@ interface CarsPagination {
   totalPages: number
 }
 
+interface EditCarForm {
+  car_id: string
+  title: string
+  model: string
+  year: number
+  price: number
+  body_type: string
+  fuel_type: string
+  transmission: string
+  mileage: number | null
+  color: string
+  engine_size: string
+  description: string
+  is_sold: boolean
+}
+
 export default function AdminCarsPage() {
   const [cars, setCars] = useState<CarWithBrand[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [updating, setUpdating] = useState<string | null>(null)
+  const [editing, setEditing] = useState<EditCarForm | null>(null)
+  const [saving, setSaving] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [brandFilter, setBrandFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -145,6 +163,49 @@ export default function AdminCarsPage() {
       alert('Error updating car status')
     } finally {
       setUpdating(null)
+    }
+  }
+
+  const openEditModal = (car: CarWithBrand) => {
+    setEditing({
+      car_id: car.car_id,
+      title: car.title,
+      model: car.model,
+      year: car.year,
+      price: car.price,
+      body_type: car.body_type,
+      fuel_type: car.fuel_type,
+      transmission: car.transmission,
+      mileage: car.mileage ?? null,
+      color: car.color || '',
+      engine_size: car.engine_size || '',
+      description: car.description || '',
+      is_sold: car.is_sold,
+    })
+  }
+
+  const handleEditCar = async () => {
+    if (!editing) return
+    setSaving(true)
+    try {
+      const response = await fetch('/api/admin/cars', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editing),
+      })
+
+      if (response.ok) {
+        const { car: updatedCar } = await response.json()
+        setCars(cars.map(c => c.car_id === updatedCar.car_id ? updatedCar : c))
+        setEditing(null)
+      } else {
+        const { error } = await response.json()
+        alert(error || 'Failed to update car')
+      }
+    } catch {
+      alert('Error updating car')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -260,7 +321,7 @@ export default function AdminCarsPage() {
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-16 w-24">
                               <Image
-                                src={car.image_url || '/image1.png'}
+                                src={car.image_urls?.[0] || '/car-placeholder.svg'}
                                 alt={`${car.car_brands.brand_name} ${car.model}`}
                                 width={96}
                                 height={64}
@@ -327,6 +388,14 @@ export default function AdminCarsPage() {
                                 View
                               </Button>
                             </Link>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => openEditModal(car)}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Edit
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
@@ -405,6 +474,160 @@ export default function AdminCarsPage() {
           )}
         </div>
       </div>
+
+      {editing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Edit Car Listing</h3>
+            <form onSubmit={(e) => { e.preventDefault(); handleEditCar() }}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <input
+                    type="text"
+                    value={editing.title}
+                    onChange={(e) => setEditing({ ...editing, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
+                  <input
+                    type="text"
+                    value={editing.model}
+                    onChange={(e) => setEditing({ ...editing, model: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                  <input
+                    type="number"
+                    value={editing.year}
+                    onChange={(e) => setEditing({ ...editing, year: parseInt(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price (USD)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={editing.price}
+                    onChange={(e) => setEditing({ ...editing, price: parseFloat(e.target.value) })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Mileage (km)</label>
+                  <input
+                    type="number"
+                    value={editing.mileage ?? ''}
+                    onChange={(e) => setEditing({ ...editing, mileage: e.target.value ? parseInt(e.target.value) : null })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Body Type</label>
+                  <select
+                    value={editing.body_type}
+                    onChange={(e) => setEditing({ ...editing, body_type: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="sedan">Sedan</option>
+                    <option value="hatchback">Hatchback</option>
+                    <option value="suv">SUV</option>
+                    <option value="coupe">Coupe</option>
+                    <option value="convertible">Convertible</option>
+                    <option value="wagon">Wagon</option>
+                    <option value="pickup">Pickup</option>
+                    <option value="van">Van</option>
+                    <option value="minivan">Minivan</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Fuel Type</label>
+                  <select
+                    value={editing.fuel_type}
+                    onChange={(e) => setEditing({ ...editing, fuel_type: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="gasoline">Gasoline</option>
+                    <option value="diesel">Diesel</option>
+                    <option value="electric">Electric</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="cng">CNG</option>
+                    <option value="lpg">LPG</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Transmission</label>
+                  <select
+                    value={editing.transmission}
+                    onChange={(e) => setEditing({ ...editing, transmission: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="automatic">Automatic</option>
+                    <option value="manual">Manual</option>
+                    <option value="cvt">CVT</option>
+                    <option value="semi-automatic">Semi-Automatic</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
+                  <input
+                    type="text"
+                    value={editing.color}
+                    onChange={(e) => setEditing({ ...editing, color: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Engine Size</label>
+                  <input
+                    type="text"
+                    value={editing.engine_size}
+                    onChange={(e) => setEditing({ ...editing, engine_size: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <select
+                    value={editing.is_sold ? 'sold' : 'available'}
+                    onChange={(e) => setEditing({ ...editing, is_sold: e.target.value === 'sold' })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="available">Available</option>
+                    <option value="sold">Sold</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <textarea
+                    value={editing.description}
+                    onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end space-x-3 mt-6">
+                <Button type="button" variant="outline" onClick={() => setEditing(null)}>
+                  Cancel
+                </Button>
+                <Button type="submit" loading={saving}>
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </Layout>
   )
 } 

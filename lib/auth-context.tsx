@@ -21,7 +21,7 @@ interface AuthContextType {
   profile: Profile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, fullName: string) => Promise<{ error: any }>
+  signUp: (email: string, password: string, fullName: string, userType?: 'buyer' | 'seller') => Promise<{ error: any }>
   signOut: () => Promise<void>
   updateProfile: (data: { full_name: string; phone: string }) => Promise<{ error: any }>
 }
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signUp = async (email: string, password: string, fullName: string) => {
+  const signUp = async (email: string, password: string, fullName: string, userType: 'buyer' | 'seller' = 'buyer') => {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email, 
           password, 
           fullname: fullName,
-          user_type: 'seller' 
+          user_type: userType 
         }),
       })
 

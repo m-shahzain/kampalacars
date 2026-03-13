@@ -125,11 +125,10 @@ export async function POST(request: NextRequest) {
       engine_size, 
       transmission, 
       features, 
-      image_url 
+      image_urls 
     } = body
 
-    // Validate required fields
-    if (!brand_id || !model || !title || !body_type || !fuel_type || !year || !price || !transmission || !image_url) {
+    if (!brand_id || !model || !title || !body_type || !fuel_type || !year || !price || !transmission || !image_urls?.length) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -151,7 +150,7 @@ export async function POST(request: NextRequest) {
         engine_size,
         transmission,
         features,
-        image_url,
+        image_urls,
         is_sold: false
       })
       .select(`

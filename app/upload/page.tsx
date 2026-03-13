@@ -25,8 +25,8 @@ export default function UploadPage() {
     transmission: '',
     features: ''
   })
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string>('')
+  const [imageFiles, setImageFiles] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
@@ -38,6 +38,8 @@ export default function UploadPage() {
   useEffect(() => {
     if (!user) {
       router.push('/auth/login')
+    } else if (user.user_type === 'admin') {
+      router.push('/admin')
     } else {
       fetchBrands()
     }
@@ -63,37 +65,45 @@ export default function UploadPage() {
   }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      setImageFile(file)
+    const files = Array.from(e.target.files || [])
+    if (files.length + imageFiles.length > 10) {
+      setError('Maximum 10 images allowed')
+      return
+    }
+    setImageFiles(prev => [...prev, ...files])
+    files.forEach(file => {
       const reader = new FileReader()
       reader.onloadend = () => {
-        setImagePreview(reader.result as string)
+        setImagePreviews(prev => [...prev, reader.result as string])
       }
       reader.readAsDataURL(file)
-    }
+    })
   }
 
-  const uploadImage = async (): Promise<string> => {
-    if (!imageFile) throw new Error('No image selected')
-    
+  const removeImage = (index: number) => {
+    setImageFiles(prev => prev.filter((_, i) => i !== index))
+    setImagePreviews(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const uploadImages = async (): Promise<string[]> => {
+    if (!imageFiles.length) throw new Error('No images selected')
     setUploading(true)
-    const formDataImage = new FormData()
-    formDataImage.append('file', imageFile)
-    
-    const response = await fetch('/api/upload', {
-      method: 'POST',
-      body: formDataImage
-    })
-    
-    if (!response.ok) {
-      const { error } = await response.json()
-      throw new Error(error)
+
+    const urls: string[] = []
+    for (const file of imageFiles) {
+      const fd = new FormData()
+      fd.append('file', file)
+      const response = await fetch('/api/upload', { method: 'POST', body: fd })
+      if (!response.ok) {
+        const { error } = await response.json()
+        throw new Error(error)
+      }
+      const { url } = await response.json()
+      urls.push(url)
     }
-    
-    const { url } = await response.json()
+
     setUploading(false)
-    return url
+    return urls
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -103,9 +113,9 @@ export default function UploadPage() {
     setSuccess(false)
 
     try {
-      let imageUrl = ''
-      if (imageFile) {
-        imageUrl = await uploadImage()
+      let imageUrls: string[] = []
+      if (imageFiles.length) {
+        imageUrls = await uploadImages()
       }
 
       const response = await fetch('/api/cars', {
@@ -128,7 +138,7 @@ export default function UploadPage() {
           engine_size: formData.engine_size || null,
           transmission: formData.transmission,
           features: formData.features || null,
-          image_url: imageUrl
+          image_urls: imageUrls
         })
       })
 
@@ -187,46 +197,44 @@ export default function UploadPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-lg shadow-md p-6">
-            {/* Image Upload */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Car Images *
+                Car Images * <span className="text-xs text-gray-400 font-normal">({imageFiles.length}/10)</span>
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                {imagePreview ? (
-                  <div className="space-y-4">
-                    <img 
-                      src={imagePreview} 
-                      alt="Preview" 
-                      className="mx-auto h-48 w-auto rounded-lg object-cover"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setImageFile(null)
-                        setImagePreview('')
-                      }}
-                    >
-                      Remove Image
-                    </Button>
-                  </div>
-                ) : (
-                  <div>
-                    <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <div className="space-y-2">
-                      <p className="text-sm text-gray-600">Upload a photo of your car</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                        required
-                      />
+
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-3">
+                  {imagePreviews.map((preview, i) => (
+                    <div key={i} className="relative aspect-[4/3] rounded-lg overflow-hidden group">
+                      <img src={preview} alt={`Preview ${i + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage(i)}
+                        className="absolute top-1 right-1 bg-black/60 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ✕
+                      </button>
                     </div>
-                  </div>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
+
+              {imageFiles.length < 10 && (
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                  <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500 mb-2">
+                    {imageFiles.length === 0 ? 'Upload photos of your car' : 'Add more photos'}
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageChange}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    required={imageFiles.length === 0}
+                  />
+                </div>
+              )}
             </div>
 
             {/* Basic Car Information */}

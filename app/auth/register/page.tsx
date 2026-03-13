@@ -6,14 +6,15 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
-import { Car, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react'
+import { Car, Mail, Lock, User, AlertCircle, CheckCircle, ShoppingBag, Tag } from 'lucide-react'
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    userType: 'buyer' as 'buyer' | 'seller'
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -23,19 +24,14 @@ export default function RegisterPage() {
   const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-    setSuccess(false)
 
-    // Validate form
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       setLoading(false)
@@ -43,20 +39,18 @@ export default function RegisterPage() {
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long')
+      setError('Password must be at least 6 characters')
       setLoading(false)
       return
     }
 
-    const { error } = await signUp(formData.email, formData.password, formData.fullName)
+    const { error } = await signUp(formData.email, formData.password, formData.fullName, formData.userType)
     
     if (error) {
       setError(error.message)
     } else {
       setSuccess(true)
-      setTimeout(() => {
-        router.push('/dashboard')
-      }, 2000)
+      setTimeout(() => router.push('/dashboard'), 2000)
     }
     
     setLoading(false)
@@ -65,20 +59,14 @@ export default function RegisterPage() {
   if (success) {
     return (
       <Layout>
-        <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-          <div className="max-w-md w-full">
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-8 py-12 text-center">
-              <div className="flex justify-center mb-6">
-                <div className="bg-green-100 p-4 rounded-full">
-                  <CheckCircle className="h-12 w-12 text-green-600" />
-                </div>
+        <div className="flex items-center justify-center py-16 px-4">
+          <div className="w-full max-w-sm text-center">
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-green-100 rounded-full mb-4">
+                <CheckCircle className="h-7 w-7 text-green-600" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Account created successfully!
-              </h3>
-              <p className="text-gray-600 mb-6">
-                Welcome to Kampala Cars! Redirecting to your dashboard...
-              </p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Account created!</h3>
+              <p className="text-sm text-gray-500">Redirecting to your dashboard...</p>
             </div>
           </div>
         </div>
@@ -88,32 +76,24 @@ export default function RegisterPage() {
 
   return (
     <Layout>
-      <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50">
-        <div className="max-w-md w-full">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-200 px-8 py-10">
-            <div className="text-center mb-8">
-              <div className="flex justify-center mb-4">
-                <div className="bg-blue-600 p-3 rounded-xl">
-                  <Car className="h-8 w-8 text-white" />
-                </div>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">
-                Create your account
-              </h2>
-              <p className="mt-2 text-gray-600">
-                Join thousands of car buyers and sellers
-              </p>
+      <div className="flex items-center justify-center py-16 px-4">
+        <div className="w-full max-w-sm">
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl mb-4">
+              <Car className="h-6 w-6 text-white" />
             </div>
+            <h2 className="text-xl font-bold text-gray-900">Create your account</h2>
+            <p className="mt-1 text-sm text-gray-500">Join Kampala Cars marketplace</p>
+          </div>
 
-            <form className="space-y-5" onSubmit={handleSubmit}>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-900 mb-2">
+                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
                   Full Name
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <User className="h-5 w-5 text-gray-400" />
-                  </div>
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     id="fullName"
                     name="fullName"
@@ -121,20 +101,48 @@ export default function RegisterPage() {
                     required
                     value={formData.fullName}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter your full name"
+                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="John Doe"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-2">
-                  Email address
+                <label className="block text-sm font-medium text-gray-700 mb-1">I want to</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, userType: 'buyer' })}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                      formData.userType === 'buyer'
+                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    Buy Cars
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, userType: 'seller' })}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
+                      formData.userType === 'seller'
+                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
+                    }`}
+                  >
+                    <Tag className="h-4 w-4" />
+                    Sell Cars
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-5 w-5 text-gray-400" />
-                  </div>
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     id="email"
                     name="email"
@@ -143,20 +151,18 @@ export default function RegisterPage() {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter your email"
+                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="you@example.com"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                   Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     id="password"
                     name="password"
@@ -165,20 +171,18 @@ export default function RegisterPage() {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Create a password"
+                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Min. 6 characters"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-900 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-5 w-5 text-gray-400" />
-                  </div>
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
                     id="confirmPassword"
                     name="confirmPassword"
@@ -187,53 +191,33 @@ export default function RegisterPage() {
                     required
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="block w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Confirm your password"
+                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Repeat your password"
                   />
                 </div>
               </div>
 
               {error && (
-                <div className="rounded-lg bg-red-50 border border-red-200 p-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <AlertCircle className="h-5 w-5 text-red-500" />
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">
-                        Error creating account
-                      </h3>
-                      <div className="mt-1 text-sm text-red-700">
-                        <p>{error}</p>
-                      </div>
-                    </div>
-                  </div>
+                <div className="flex items-start gap-2 rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">
+                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
 
-              <div>
-                <Button
-                  type="submit"
-                  loading={loading}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                  size="lg"
-                >
-                  Create Account
-                </Button>
-              </div>
-
-              <div className="text-center">
-                <div className="text-sm text-gray-600">
-                  Already have an account?{' '}
-                  <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-                    Sign in
-                  </Link>
-                </div>
-              </div>
+              <Button type="submit" loading={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="md">
+                Create Account
+              </Button>
             </form>
           </div>
+
+          <p className="text-center text-sm text-gray-500 mt-4">
+            Already have an account?{' '}
+            <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
+              Sign in
+            </Link>
+          </p>
         </div>
       </div>
     </Layout>
   )
-} 
+}

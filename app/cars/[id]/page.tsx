@@ -13,6 +13,7 @@ import Link from 'next/link'
 export default function CarDetailsPage() {
   const [car, setCar] = useState<CarWithBrand | null>(null)
   const [loading, setLoading] = useState(true)
+  const [activeImage, setActiveImage] = useState(0)
   const [showContactForm, setShowContactForm] = useState(false)
   const [contactForm, setContactForm] = useState({
     name: '',
@@ -118,24 +119,43 @@ export default function CarDetailsPage() {
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            {/* Car Image */}
-            <div className="relative h-96 w-full mb-6">
+            <div className="relative aspect-[16/9] w-full mb-2 rounded-lg overflow-hidden">
               <Image
-                src={car.image_url || '/image1.png'}
+                src={car.image_urls?.[activeImage] || '/car-placeholder.svg'}
                 alt={`${car.car_brands.brand_name} ${car.model}`}
                 fill
-                className="object-cover rounded-lg"
+                className="object-cover"
                 priority
               />
+              {car.image_urls?.length > 1 && (
+                <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                  {activeImage + 1} / {car.image_urls.length}
+                </div>
+              )}
             </div>
 
+            {car.image_urls?.length > 1 && (
+              <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1">
+                {car.image_urls.map((url: string, i: number) => (
+                  <button
+                    key={i}
+                    onClick={() => setActiveImage(i)}
+                    className={`relative w-16 h-12 rounded-md overflow-hidden shrink-0 border-2 transition-all ${
+                      i === activeImage ? 'border-blue-600' : 'border-transparent opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <Image src={url} alt={`Thumbnail ${i + 1}`} fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
+
             {/* Car Details */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h1 className="text-3xl font-bold text-gray-900">
+            <div className="bg-white rounded-lg border border-gray-200 p-5">
+              <div className="flex items-center justify-between mb-3">
+                <h1 className="text-2xl font-bold text-gray-900">
                   {car.car_brands.brand_name} {car.model}
                 </h1>
                 <div className="flex space-x-2">
@@ -150,31 +170,31 @@ export default function CarDetailsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="h-6 w-6 mx-auto text-blue-600 mb-2" />
-                  <p className="text-sm text-gray-600">Year</p>
-                  <p className="font-semibold">{car.year}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                <div className="text-center p-2.5 bg-gray-50 rounded-lg">
+                  <Calendar className="h-5 w-5 mx-auto text-blue-600 mb-1" />
+                  <p className="text-xs text-gray-500">Year</p>
+                  <p className="text-sm font-semibold">{car.year}</p>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <DollarSign className="h-6 w-6 mx-auto text-green-600 mb-2" />
-                  <p className="text-sm text-gray-600">Price</p>
-                  <p className="font-semibold text-green-600">{formatPrice(car.price)}</p>
+                <div className="text-center p-2.5 bg-gray-50 rounded-lg">
+                  <DollarSign className="h-5 w-5 mx-auto text-green-600 mb-1" />
+                  <p className="text-xs text-gray-500">Price</p>
+                  <p className="text-sm font-semibold text-green-600">{formatPrice(car.price)}</p>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="h-6 w-6 mx-auto text-purple-600 mb-2" />
-                  <p className="text-sm text-gray-600">Listed</p>
-                  <p className="font-semibold">{formatDate(car.created_at)}</p>
+                <div className="text-center p-2.5 bg-gray-50 rounded-lg">
+                  <Calendar className="h-5 w-5 mx-auto text-purple-600 mb-1" />
+                  <p className="text-xs text-gray-500">Listed</p>
+                  <p className="text-sm font-semibold">{formatDate(car.created_at)}</p>
                 </div>
-                <div className="text-center p-3 bg-gray-50 rounded-lg">
-                  <User className="h-6 w-6 mx-auto text-orange-600 mb-2" />
-                  <p className="text-sm text-gray-600">Seller</p>
-                  <p className="font-semibold text-sm">{car.users?.fullname || 'Private'}</p>
+                <div className="text-center p-2.5 bg-gray-50 rounded-lg">
+                  <User className="h-5 w-5 mx-auto text-orange-600 mb-1" />
+                  <p className="text-xs text-gray-500">Seller</p>
+                  <p className="text-sm font-semibold">{car.users?.fullname || 'Private'}</p>
                 </div>
               </div>
 
               <div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-3">Description</h2>
+                <h2 className="text-base font-semibold text-gray-900 mb-2">Description</h2>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {car.description}
                 </p>
@@ -185,16 +205,15 @@ export default function CarDetailsPage() {
           {/* Sidebar */}
           <div className="lg:col-span-1">
             {/* Price & Contact */}
-            <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
-              <div className="text-center mb-6">
-                <p className="text-3xl font-bold text-green-600">
+            <div className="bg-white rounded-lg border border-gray-200 p-5 sticky top-4">
+              <div className="text-center mb-4">
+                <p className="text-2xl font-bold text-green-600">
                   {formatPrice(car.price)}
                 </p>
               </div>
 
-              {/* Seller Info */}
-              <div className="mb-6">
-                <h3 className="font-semibold text-gray-900 mb-3">Seller Information</h3>
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">Seller Information</h3>
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <User className="h-4 w-4 text-gray-400 mr-2" />

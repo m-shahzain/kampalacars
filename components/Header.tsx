@@ -13,7 +13,7 @@ export function Header() {
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
-      window.location.href = `/?search=${encodeURIComponent(searchQuery.trim())}`
+      window.location.href = `/cars?search=${encodeURIComponent(searchQuery.trim())}`
     }
   }
 
@@ -49,32 +49,37 @@ export function Header() {
             </Button>
           </form>
 
-          {/* Navigation */}
           <nav className="flex items-center space-x-3">
+            <Link href="/cars" className="hidden sm:block">
+              <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
+                Browse
+              </Button>
+            </Link>
             {user ? (
               <>
-                {/* Admin Dashboard Link - Only for admin users */}
-                {user.user_type === 'admin' && (
+                {user.user_type === 'admin' ? (
                   <Link href="/admin">
                     <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">
                       <Shield className="h-4 w-4 mr-2" />
-                      Admin
+                      Admin Panel
                     </Button>
                   </Link>
+                ) : (
+                  <>
+                    <Link href="/dashboard">
+                      <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
+                        <User className="h-4 w-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                    <Link href="/upload">
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Sell Car
+                      </Button>
+                    </Link>
+                  </>
                 )}
-                
-                <Link href="/dashboard">
-                  <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
-                    <User className="h-4 w-4 mr-2" />
-                    Dashboard
-                  </Button>
-                </Link>
-                <Link href="/upload">
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Sell Car
-                  </Button>
-                </Link>
                 <Button
                   variant="outline"
                   size="sm"

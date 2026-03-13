@@ -79,7 +79,7 @@ export async function PUT(
       engine_size, 
       transmission, 
       features, 
-      image_url,
+      image_urls,
       is_sold 
     } = body
 
@@ -100,7 +100,7 @@ export async function PUT(
         engine_size,
         transmission,
         features,
-        image_url,
+        image_urls,
         is_sold: is_sold !== undefined ? is_sold : undefined
       })
       .eq('car_id', id)

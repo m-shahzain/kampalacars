@@ -1,76 +1,74 @@
+
+'use client'
+
 import Image from 'next/image'
 import Link from 'next/link'
+import { useState } from 'react'
 import { CarWithBrand } from '@/lib/types'
-import { formatPrice, formatDate } from '@/lib/utils'
-import { Calendar, DollarSign, User, Phone } from 'lucide-react'
+import { formatPrice } from '@/lib/utils'
+import { Fuel, Gauge, Car as CarIcon } from 'lucide-react'
 
 interface CarCardProps {
   car: CarWithBrand
+  priority?: boolean
 }
 
-export function CarCard({ car }: CarCardProps) {
+export function CarCard({ car, priority = false }: CarCardProps) {
+  const [imgError, setImgError] = useState(false)
+
   return (
-    <div className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-gray-300 transition-all duration-300">
-      {/* Car Image */}
-      <div className="relative h-48 w-full bg-gray-100">
-        <Image
-          src={car.image_url || '/image1.png'}
-          alt={`${car.car_brands.brand_name} ${car.model}`}
-          fill
-          className="object-cover"
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-        />
-      </div>
-
-      {/* Car Details */}
-      <div className="p-6">
-        <div className="mb-3">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">
-            {car.car_brands.brand_name} {car.model}
-          </h3>
-          <p className="text-gray-600 text-sm">Year: {car.year}</p>
-        </div>
-
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2 leading-relaxed">
-          {car.description}
-        </p>
-
-        {/* Price */}
-        <div className="mb-4">
-          <span className="text-2xl font-bold text-blue-600">
-            {formatPrice(car.price)}
-          </span>
-        </div>
-
-        {/* Seller Info */}
-        {car.users && (
-          <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-            <div className="flex items-center text-sm text-gray-700 mb-1">
-              <User className="h-4 w-4 mr-2 text-gray-500" />
-              <span className="font-medium">{car.users.fullname || car.users.email}</span>
+    <Link href={`/cars/${car.car_id}`} className="group block">
+      <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200">
+        <div className="relative aspect-[16/10] w-full bg-gray-100">
+          {imgError ? (
+            <div className="flex items-center justify-center h-full bg-gray-50">
+              <CarIcon className="h-12 w-12 text-gray-300" />
             </div>
-            {car.users.phone && (
-              <div className="flex items-center text-sm text-gray-600">
-                <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                <span>{car.users.phone}</span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Date */}
-        <div className="flex items-center text-sm text-gray-500 mb-4">
-          <Calendar className="h-4 w-4 mr-2" />
-          <span>Listed {formatDate(car.created_at)}</span>
+          ) : (
+            <Image
+              src={car.image_urls?.[0] || '/car-placeholder.svg'}
+              alt={`${car.car_brands.brand_name} ${car.model}`}
+              fill
+              className="object-cover group-hover:scale-[1.02] transition-transform duration-200"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={priority}
+              onError={() => setImgError(true)}
+            />
+          )}
+          {car.is_sold && (
+            <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded">
+              SOLD
+            </div>
+          )}
         </div>
 
-        {/* View Details Button */}
-        <Link href={`/cars/${car.car_id}`}>
-          <button className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium">
-            View Details
-          </button>
-        </Link>
+        <div className="p-4">
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+              {car.car_brands.brand_name} {car.model}
+            </h3>
+            <span className="text-xs text-gray-500 shrink-0">{car.year}</span>
+          </div>
+
+          <p className="text-lg font-bold text-gray-900 mb-2">
+            {formatPrice(car.price)}
+          </p>
+
+          <div className="flex items-center gap-3 text-xs text-gray-500">
+            {car.mileage && (
+              <span className="flex items-center gap-1">
+                <Gauge className="h-3.5 w-3.5" />
+                {car.mileage.toLocaleString()} km
+              </span>
+            )}
+            <span className="flex items-center gap-1">
+              <Fuel className="h-3.5 w-3.5" />
+              {car.fuel_type}
+            </span>
+            <span className="capitalize">{car.transmission}</span>
+          </div>
+        </div>
       </div>
-    </div>
+    </Link>
   )
-} 
+}

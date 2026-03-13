@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { CarWithBrand } from '@/lib/types'
 import { ChevronLeft, ChevronRight, Loader2, Car as CarIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 
 function HomeContent() {
   const [cars, setCars] = useState<CarWithBrand[]>([])
@@ -48,50 +49,51 @@ function HomeContent() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 bg-white">
+      <div className="container mx-auto px-4 py-6">
         {/* Hero Section */}
-        <div className="text-center mb-16 bg-gray-50 border border-gray-200 rounded-2xl py-16 px-8">
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
+        <div className="text-center mb-8 bg-gray-50 border border-gray-200 rounded-xl py-10 px-6">
+          <h1 className="text-2xl md:text-3xl font-bold mb-3 text-gray-900">
             Find Your Perfect Car
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Discover amazing deals on quality vehicles in Kampala. Your trusted marketplace for buying and selling cars.
+          <p className="text-gray-500 mb-6 max-w-lg mx-auto text-sm">
+            Discover quality vehicles in Kampala. Your trusted marketplace for buying and selling cars.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white">
-              Browse Cars
-            </Button>
-            <Button size="lg" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
-              Sell Your Car
-            </Button>
+          <div className="flex gap-3 justify-center">
+            <Link href="/cars">
+              <Button size="md" className="bg-blue-600 hover:bg-blue-700 text-white">
+                Browse Cars
+              </Button>
+            </Link>
+            <Link href="/upload">
+              <Button size="md" variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                Sell Your Car
+              </Button>
+            </Link>
           </div>
         </div>
 
-        {/* Search Results Header */}
         {search && (
-          <div className="mb-8 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
-              Search Results for "{search}"
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h2 className="text-lg font-semibold text-gray-900">
+              Results for &ldquo;{search}&rdquo;
+              <span className="ml-2 text-sm font-normal text-gray-500">{total} found</span>
             </h2>
-            <p className="text-gray-600">
-              {total} car{total !== 1 ? 's' : ''} found
-            </p>
           </div>
         )}
 
         {/* Cars Grid */}
         {loading ? (
-          <div className="flex justify-center items-center py-20">
+          <div className="flex justify-center items-center py-16">
             <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
-              <span className="text-gray-600">Loading cars...</span>
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto mb-3" />
+              <span className="text-sm text-gray-500">Loading cars...</span>
             </div>
           </div>
         ) : cars.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
-              {cars.map((car) => (
-                <CarCard key={car.car_id} car={car} />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
+              {cars.map((car, index) => (
+                <CarCard key={car.car_id} car={car} priority={index < 4} />
               ))}
             </div>
 
@@ -123,20 +125,20 @@ function HomeContent() {
             </div>
           </>
         ) : (
-          <div className="text-center py-20">
-            <div className="bg-gray-50 border border-gray-200 rounded-2xl p-12 max-w-md mx-auto">
-              <div className="text-gray-400 mb-6">
-                <CarIcon className="mx-auto h-16 w-16" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-3">
+          <div className="text-center py-12">
+            <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 max-w-xs mx-auto">
+              <CarIcon className="mx-auto h-10 w-10 text-gray-300 mb-3" />
+              <h3 className="text-base font-semibold text-gray-900 mb-1">
                 {search ? 'No cars found' : 'No cars available'}
               </h3>
-              <p className="text-gray-600 mb-6">
-                {search ? 'Try adjusting your search terms.' : 'Be the first to list a car!'}
+              <p className="text-sm text-gray-500 mb-4">
+                {search ? 'Try adjusting your search.' : 'Be the first to list a car!'}
               </p>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                Sell Your Car
-              </Button>
+              <Link href="/upload">
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  Sell Your Car
+                </Button>
+              </Link>
             </div>
           </div>
         )}

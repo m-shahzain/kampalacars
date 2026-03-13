@@ -32,7 +32,7 @@ export type Car = {
   transmission: 'manual' | 'automatic' | 'cvt' | 'semi-automatic'
   features?: string
   is_sold: boolean
-  image_url: string
+  image_urls: string[]
   created_at: string
 }
 

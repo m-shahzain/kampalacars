@@ -21,6 +21,8 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!user) {
       router.push('/auth/login')
+    } else if (user.user_type === 'admin') {
+      router.push('/admin')
     } else {
       fetchUserCars()
     }
@@ -180,7 +182,7 @@ export default function DashboardPage() {
                     <div className="flex items-center space-x-4">
                       <div className="relative h-16 w-24 flex-shrink-0">
                         <Image
-                          src={car.image_url || '/image1.png'}
+                          src={car.image_urls?.[0] || '/car-placeholder.svg'}
                           alt={`${car.car_brands.brand_name} ${car.model}`}
                           fill
                           className="object-cover rounded-md"

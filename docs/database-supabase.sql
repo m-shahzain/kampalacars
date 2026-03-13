@@ -52,7 +52,7 @@ CREATE TABLE cars (
     transmission TEXT CHECK (transmission IN ('manual', 'automatic', 'cvt', 'semi-automatic')) NOT NULL,
     features TEXT,
     is_sold BOOLEAN DEFAULT FALSE,
-    image_url TEXT NOT NULL,
+    image_urls TEXT[] NOT NULL DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -82,3 +82,38 @@ ALTER TABLE cars DISABLE ROW LEVEL SECURITY;
 GRANT ALL ON users TO anon, authenticated;
 GRANT ALL ON car_brands TO anon, authenticated;
 GRANT ALL ON cars TO anon, authenticated;
+
+-- ============================================================
+-- STORAGE: Create car-images bucket and policies
+-- ============================================================
+
+-- Create the car-images bucket (public so images can be viewed by anyone)
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'car-images',
+  'car-images',
+  true,
+  5242880,  -- 5MB max file size
+  ARRAY['image/jpeg', 'image/png', 'image/webp']
+)
+ON CONFLICT (id) DO NOTHING;
+
+-- Allow anyone to VIEW images (public bucket)
+CREATE POLICY "Car images are publicly accessible"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'car-images');
+
+-- Allow anyone to UPLOAD images (auth is handled by our API routes)
+CREATE POLICY "Anyone can upload car images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'car-images');
+
+-- Allow anyone to UPDATE their uploaded images
+CREATE POLICY "Anyone can update car images"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'car-images');
+
+-- Allow anyone to DELETE car images
+CREATE POLICY "Anyone can delete car images"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'car-images');

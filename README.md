@@ -130,7 +130,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 - year (INTEGER)
 - price (DECIMAL)
 - description (TEXT)
-- image_url (TEXT)
+- image_urls (TEXT[])
 - seller_id (UUID, Foreign Key)
 - seller_email (TEXT)
 - created_at (TIMESTAMP)

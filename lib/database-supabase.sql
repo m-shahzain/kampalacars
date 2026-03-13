@@ -40,7 +40,7 @@ CREATE TABLE cars (
     transmission TEXT CHECK (transmission IN ('manual', 'automatic', 'cvt', 'semi-automatic')) NOT NULL,
     features TEXT, -- JSON or comma-separated string
     is_sold BOOLEAN DEFAULT FALSE,
-    image_url TEXT NOT NULL,
+    image_urls TEXT[] NOT NULL DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -53,22 +53,43 @@ CREATE INDEX idx_cars_sold ON cars(is_sold);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_brands_name ON car_brands(brand_name);
 
--- Enable Row Level Security (RLS)
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE car_brands ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cars ENABLE ROW LEVEL SECURITY;
+-- Disable RLS (auth is handled by API routes, not Supabase Auth)
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE car_brands DISABLE ROW LEVEL SECURITY;
+ALTER TABLE cars DISABLE ROW LEVEL SECURITY;
 
--- RLS Policies
+-- Grant full access to anon and authenticated roles
+GRANT ALL ON users TO anon, authenticated;
+GRANT ALL ON car_brands TO anon, authenticated;
+GRANT ALL ON cars TO anon, authenticated;
 
--- Users can read all user profiles but only update their own
-CREATE POLICY "Users can view all profiles" ON users FOR SELECT USING (true);
-CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid()::text = user_id::text);
+-- ============================================================
+-- STORAGE: Create car-images bucket
+-- ============================================================
 
--- Car brands are readable by everyone
-CREATE POLICY "Car brands are viewable by everyone" ON car_brands FOR SELECT USING (true);
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+  'car-images',
+  'car-images',
+  true,
+  5242880,  -- 5MB max
+  ARRAY['image/jpeg', 'image/png', 'image/webp']
+)
+ON CONFLICT (id) DO NOTHING;
 
--- Cars policies
-CREATE POLICY "Cars are viewable by everyone" ON cars FOR SELECT USING (true);
-CREATE POLICY "Users can insert their own cars" ON cars FOR INSERT WITH CHECK (auth.uid()::text = seller_id::text);
-CREATE POLICY "Users can update own cars" ON cars FOR UPDATE USING (auth.uid()::text = seller_id::text);
-CREATE POLICY "Users can delete own cars" ON cars FOR DELETE USING (auth.uid()::text = seller_id::text); 
+-- Storage policies (required even with RLS disabled on tables)
+CREATE POLICY "Car images are publicly accessible"
+  ON storage.objects FOR SELECT
+  USING (bucket_id = 'car-images');
+
+CREATE POLICY "Anyone can upload car images"
+  ON storage.objects FOR INSERT
+  WITH CHECK (bucket_id = 'car-images');
+
+CREATE POLICY "Anyone can update car images"
+  ON storage.objects FOR UPDATE
+  USING (bucket_id = 'car-images');
+
+CREATE POLICY "Anyone can delete car images"
+  ON storage.objects FOR DELETE
+  USING (bucket_id = 'car-images'); 
