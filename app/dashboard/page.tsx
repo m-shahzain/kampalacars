@@ -82,15 +82,18 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600 mt-1">Welcome back, {profile?.full_name || user.email}</p>
           </div>
-          <div className="mt-4 md:mt-0">
-            <Button onClick={() => router.push('/upload')}>
-              <Plus className="h-4 w-4 mr-2" />
-              List New Car
-            </Button>
-          </div>
+          {user.user_type === 'seller' && (
+            <div className="mt-4 md:mt-0">
+              <Button onClick={() => router.push('/upload')}>
+                <Plus className="h-4 w-4 mr-2" />
+                List New Car
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Stats */}
+        {/* Stats - only for sellers */}
+        {user.user_type === 'seller' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
@@ -128,6 +131,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+        )}
 
         {/* Profile Section */}
         <div className="bg-white rounded-lg shadow mb-8 p-6">
@@ -163,7 +167,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Car Listings */}
+        {/* Car Listings - only for sellers */}
+        {user.user_type === 'seller' ? (
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Your Car Listings</h2>
@@ -247,6 +252,16 @@ export default function DashboardPage() {
             </div>
           )}
         </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow p-8 text-center">
+            <CarIcon className="mx-auto h-12 w-12 text-gray-300 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">You&apos;re a Buyer</h2>
+            <p className="text-gray-600 mb-6">Browse our listings to find your perfect car.</p>
+            <Button onClick={() => router.push('/cars')}>
+              Browse Cars
+            </Button>
+          </div>
+        )}
       </div>
     </Layout>
   )

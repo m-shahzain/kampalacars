@@ -1,7 +1,12 @@
+'use client'
+
 import Link from 'next/link'
 import { Car } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
 
 export function Footer() {
+  const { user } = useAuth()
+
   return (
     <footer className="bg-gray-50 border-t border-gray-200 mt-auto">
       <div className="container mx-auto px-4 py-8">
@@ -22,7 +27,9 @@ export function Footer() {
             <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Browse</h3>
             <ul className="space-y-2 text-sm text-gray-500">
               <li><Link href="/" className="hover:text-blue-600 transition-colors">All Cars</Link></li>
-              <li><Link href="/upload" className="hover:text-blue-600 transition-colors">Sell Your Car</Link></li>
+              {user?.user_type === 'seller' && (
+                <li><Link href="/upload" className="hover:text-blue-600 transition-colors">Sell Your Car</Link></li>
+              )}
             </ul>
           </div>
 

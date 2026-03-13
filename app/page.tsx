@@ -8,8 +8,10 @@ import { CarWithBrand } from '@/lib/types'
 import { ChevronLeft, ChevronRight, Loader2, Car as CarIcon } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { useAuth } from '@/lib/auth-context'
 
 function HomeContent() {
+  const { user } = useAuth()
   const [cars, setCars] = useState<CarWithBrand[]>([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
@@ -134,11 +136,13 @@ function HomeContent() {
               <p className="text-sm text-gray-500 mb-4">
                 {search ? 'Try adjusting your search.' : 'Be the first to list a car!'}
               </p>
-              <Link href="/upload">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                  Sell Your Car
-                </Button>
-              </Link>
+              {user?.user_type !== 'buyer' && (
+                <Link href="/upload">
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                    Sell Your Car
+                  </Button>
+                </Link>
+              )}
             </div>
           </div>
         )}

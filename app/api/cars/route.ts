@@ -107,6 +107,9 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = JSON.parse(sessionCookie.value)
+    if (sessionData.userType !== 'seller') {
+      return NextResponse.json({ error: 'Only sellers can create car listings' }, { status: 403 })
+    }
     const supabase = await createClient()
     
     const body = await request.json()
