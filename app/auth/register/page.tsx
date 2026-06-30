@@ -1,60 +1,65 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
-import { Layout } from '@/components/Layout'
-import { Button } from '@/components/ui/Button'
-import { Car, Mail, Lock, User, AlertCircle, CheckCircle, ShoppingBag, Tag } from 'lucide-react'
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/Button";
+import { Car, Mail, Lock, User, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    userType: 'buyer' as 'buyer' | 'seller'
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState(false)
-  
-  const { signUp } = useAuth()
-  const router = useRouter()
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    userType: "buyer" as "buyer",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+
+  const { signUp } = useAuth();
+  const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError('')
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match')
-      setLoading(false)
-      return
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
     }
 
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters')
-      setLoading(false)
-      return
+      setError("Password must be at least 6 characters");
+      setLoading(false);
+      return;
     }
 
-    const { error } = await signUp(formData.email, formData.password, formData.fullName, formData.userType)
-    
+    const { error } = await signUp(
+      formData.email,
+      formData.password,
+      formData.fullName,
+      formData.userType
+    );
+
     if (error) {
-      setError(error.message)
+      setError(error.message);
     } else {
-      setSuccess(true)
-      setTimeout(() => router.push('/dashboard'), 2000)
+      setSuccess(true);
+      setTimeout(() => router.push("/dashboard"), 2000);
     }
-    
-    setLoading(false)
-  }
+
+    setLoading(false);
+  };
 
   if (success) {
     return (
@@ -65,13 +70,17 @@ export default function RegisterPage() {
               <div className="inline-flex items-center justify-center w-14 h-14 bg-green-100 rounded-full mb-4">
                 <CheckCircle className="h-7 w-7 text-green-600" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Account created!</h3>
-              <p className="text-sm text-gray-500">Redirecting to your dashboard...</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                Account created!
+              </h3>
+              <p className="text-sm text-gray-500">
+                Redirecting to your dashboard...
+              </p>
             </div>
           </div>
         </div>
       </Layout>
-    )
+    );
   }
 
   return (
@@ -82,14 +91,21 @@ export default function RegisterPage() {
             <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl mb-4">
               <Car className="h-6 w-6 text-white" />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">Create your account</h2>
-            <p className="mt-1 text-sm text-gray-500">Join Kampala Cars marketplace</p>
+            <h2 className="text-xl font-bold text-gray-900">
+              Create your account
+            </h2>
+            <p className="mt-1 text-sm text-gray-500">
+              Join Kampala Cars marketplace
+            </p>
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
-                <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="fullName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Full Name
                 </label>
                 <div className="relative">
@@ -108,37 +124,10 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">I want to</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, userType: 'buyer' })}
-                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
-                      formData.userType === 'buyer'
-                        ? 'border-blue-600 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                    }`}
-                  >
-                    <ShoppingBag className="h-4 w-4" />
-                    Buy Cars
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setFormData({ ...formData, userType: 'seller' })}
-                    className={`flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg border-2 text-sm font-medium transition-all ${
-                      formData.userType === 'seller'
-                        ? 'border-blue-600 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 text-gray-500 hover:border-gray-300'
-                    }`}
-                  >
-                    <Tag className="h-4 w-4" />
-                    Sell Cars
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Email
                 </label>
                 <div className="relative">
@@ -158,7 +147,10 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -178,7 +170,10 @@ export default function RegisterPage() {
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Confirm Password
                 </label>
                 <div className="relative">
@@ -204,20 +199,28 @@ export default function RegisterPage() {
                 </div>
               )}
 
-              <Button type="submit" loading={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="md">
+              <Button
+                type="submit"
+                loading={loading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                size="md"
+              >
                 Create Account
               </Button>
             </form>
           </div>
 
           <p className="text-center text-sm text-gray-500 mt-4">
-            Already have an account?{' '}
-            <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
+            Already have an account?{" "}
+            <Link
+              href="/auth/login"
+              className="font-medium text-blue-600 hover:text-blue-500"
+            >
               Sign in
             </Link>
           </p>
         </div>
       </div>
     </Layout>
-  )
+  );
 }
