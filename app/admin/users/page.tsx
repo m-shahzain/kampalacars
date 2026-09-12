@@ -28,6 +28,7 @@ interface User {
   email: string
   phone?: string
   user_type: 'seller' | 'buyer' | 'admin'
+  is_premium: boolean
   created_at: string
 }
 
@@ -242,6 +243,9 @@ export default function AdminUsersPage() {
                         Type
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Premium
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Joined
                       </th>
                       <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -268,6 +272,11 @@ export default function AdminUsersPage() {
                               </div>
                             </div>
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${user.is_premium ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'}`}>
+                            {user.is_premium ? 'Premium' : 'Standard'}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
@@ -427,6 +436,15 @@ export default function AdminUsersPage() {
                       <option value="admin">Admin</option>
                     </select>
                   </div>
+                  <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      checked={editing.is_premium}
+                      onChange={(e) => setEditing({...editing, is_premium: e.target.checked})}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                    />
+                    Premium seller approved
+                  </label>
                 </div>
                 <div className="flex justify-end space-x-3 mt-6">
                   <Button

@@ -72,14 +72,12 @@ export function Header() {
                         Dashboard
                       </Button>
                     </Link>
-                    {user.user_type === 'seller' && (
-                      <Link href="/upload">
-                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
-                          <Plus className="h-4 w-4 mr-2" />
-                          Sell Car
-                        </Button>
-                      </Link>
-                    )}
+                    <Link href="/upload">
+                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                        <Plus className="h-4 w-4 mr-2" />
+                        Sell Car
+                      </Button>
+                    </Link>
                   </>
                 )}
                 <Button

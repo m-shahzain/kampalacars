@@ -4,7 +4,9 @@ export type User = {
   email: string
   password: string
   phone?: string
+  address?: string
   user_type: 'seller' | 'buyer' | 'admin'
+  is_premium: boolean
   created_at: string
 }
 
@@ -20,6 +22,7 @@ export type Car = {
   brand_id: string
   model: string
   title: string
+  chassis_number?: string
   description?: string
   body_type: 'sedan' | 'hatchback' | 'suv' | 'coupe' | 'convertible' | 'wagon' | 'pickup' | 'van' | 'minivan'
   fuel_type: 'gasoline' | 'diesel' | 'electric' | 'hybrid' | 'cng' | 'lpg'
@@ -30,15 +33,19 @@ export type Car = {
   color?: string
   engine_size?: string
   transmission: 'manual' | 'automatic' | 'cvt' | 'semi-automatic'
+  drive_type?: '2wd' | '4wd'
   features?: string
   is_sold: boolean
+  approval_status: 'pending' | 'approved' | 'rejected'
+  approved_at?: string | null
   image_urls: string[]
   created_at: string
 }
 
 export type CarWithBrand = Car & {
   car_brands: CarBrand
-  users: Pick<User, 'user_id' | 'fullname' | 'email' | 'phone'>
+  users: Pick<User, 'user_id' | 'fullname' | 'email' | 'phone' | 'is_premium'>
+  contact: Pick<User, 'fullname' | 'email' | 'phone'> & { is_seller: boolean }
 }
 
 export type CarWithDetails = Car & {

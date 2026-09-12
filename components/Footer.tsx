@@ -27,7 +27,7 @@ export function Footer() {
             <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Browse</h3>
             <ul className="space-y-2 text-sm text-gray-500">
               <li><Link href="/" className="hover:text-blue-600 transition-colors">All Cars</Link></li>
-              {user?.user_type === 'seller' && (
+              {user && user.user_type !== 'admin' && (
                 <li><Link href="/upload" className="hover:text-blue-600 transition-colors">Sell Your Car</Link></li>
               )}
             </ul>

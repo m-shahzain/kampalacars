@@ -30,13 +30,11 @@ export default function DashboardPage() {
 
   const fetchUserCars = async () => {
     try {
-      const response = await fetch('/api/cars')
+      const response = await fetch('/api/cars?mine=true')
       const data = await response.json()
       
       if (response.ok) {
-        // Filter cars by current user (using user_id from new schema)
-        const userCars = data.cars.filter((car: CarWithBrand) => car.seller_id === user?.user_id)
-        setCars(userCars)
+        setCars(data.cars)
       }
     } catch (error) {
       console.error('Error fetching cars:', error)
@@ -82,7 +80,7 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
             <p className="text-gray-600 mt-1">Welcome back, {profile?.full_name || user.email}</p>
           </div>
-          {user.user_type === 'seller' && (
+          {user.user_type !== 'admin' && (
             <div className="mt-4 md:mt-0">
               <Button onClick={() => router.push('/upload')}>
                 <Plus className="h-4 w-4 mr-2" />
@@ -93,7 +91,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats - only for sellers */}
-        {user.user_type === 'seller' && (
+        {user.user_type !== 'admin' && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
@@ -168,7 +166,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Car Listings - only for sellers */}
-        {user.user_type === 'seller' ? (
+        {user.user_type !== 'admin' ? (
         <div className="bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Your Car Listings</h2>
@@ -204,6 +202,13 @@ export default function DashboardPage() {
                           </span>
                           <span className="text-sm text-gray-500">
                             Listed {formatDate(car.created_at)}
+                          </span>
+                          <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
+                            car.approval_status === 'approved' ? 'bg-green-100 text-green-800' :
+                            car.approval_status === 'rejected' ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {car.approval_status === 'approved' ? 'Approved' : car.approval_status === 'rejected' ? 'Rejected' : 'Pending approval'}
                           </span>
                         </div>
                       </div>

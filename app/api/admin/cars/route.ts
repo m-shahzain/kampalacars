@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')
     const brand_id = searchParams.get('brand_id')
     const is_sold = searchParams.get('is_sold')
+    const approval_status = searchParams.get('approval_status')
     const offset = (page - 1) * limit
 
     let query = supabase
@@ -41,7 +42,7 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         car_brands!inner(brand_id, brand_name),
-        users!inner(user_id, fullname, email, phone)
+        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
       `)
       .order('created_at', { ascending: false })
 
@@ -56,6 +57,9 @@ export async function GET(request: NextRequest) {
 
     if (is_sold !== null && is_sold !== undefined) {
       query = query.eq('is_sold', is_sold === 'true')
+    }
+    if (approval_status) {
+      query = query.eq('approval_status', approval_status)
     }
 
     // Get total count
@@ -109,7 +113,8 @@ export async function PUT(request: NextRequest) {
       engine_size, 
       transmission, 
       features, 
-      is_sold 
+      is_sold,
+      approval_status
     } = body
 
     if (!car_id) {
@@ -133,13 +138,16 @@ export async function PUT(request: NextRequest) {
         engine_size,
         transmission,
         features,
-        is_sold: is_sold !== undefined ? is_sold : undefined
+        is_sold: is_sold !== undefined ? is_sold : undefined,
+        approval_status: approval_status || undefined,
+        approved_at: approval_status === 'approved' ? new Date().toISOString() : approval_status ? null : undefined,
+        approved_by: approval_status === 'approved' ? (await checkAdminAuth()).user.userId : approval_status ? null : undefined
       })
       .eq('car_id', car_id)
       .select(`
         *,
         car_brands!inner(brand_id, brand_name),
-        users!inner(user_id, fullname, email, phone)
+        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
       `)
       .single()
 

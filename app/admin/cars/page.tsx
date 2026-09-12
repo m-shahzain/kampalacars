@@ -56,6 +56,7 @@ export default function AdminCarsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [brandFilter, setBrandFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [approvalFilter, setApprovalFilter] = useState('')
   const [pagination, setPagination] = useState<CarsPagination>({
     page: 1,
     limit: 20,
@@ -78,7 +79,7 @@ export default function AdminCarsPage() {
     }
 
     fetchCars()
-  }, [user, router, pagination.page, searchQuery, brandFilter, statusFilter])
+  }, [user, router, pagination.page, searchQuery, brandFilter, statusFilter, approvalFilter])
 
   const fetchCars = async () => {
     setLoading(true)
@@ -88,7 +89,8 @@ export default function AdminCarsPage() {
         limit: pagination.limit.toString(),
         ...(searchQuery && { search: searchQuery }),
         ...(brandFilter && { brand_id: brandFilter }),
-        ...(statusFilter && { is_sold: statusFilter })
+        ...(statusFilter && { is_sold: statusFilter }),
+        ...(approvalFilter && { approval_status: approvalFilter })
       })
 
       const response = await fetch(`/api/admin/cars?${params}`)
@@ -164,6 +166,21 @@ export default function AdminCarsPage() {
     } finally {
       setUpdating(null)
     }
+  }
+
+  const handleApproval = async (car: CarWithBrand, approval_status: 'approved' | 'rejected') => {
+    setUpdating(car.car_id)
+    try {
+      const response = await fetch('/api/admin/cars', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ car_id: car.car_id, approval_status })
+      })
+      const data = await response.json()
+      if (response.ok) setCars(cars.map(c => c.car_id === data.car.car_id ? data.car : c))
+      else alert(data.error || 'Failed to update approval')
+    } catch {
+      alert('Error updating approval')
+    } finally { setUpdating(null) }
   }
 
   const openEditModal = (car: CarWithBrand) => {
@@ -261,6 +278,16 @@ export default function AdminCarsPage() {
               <option value="">All Status</option>
               <option value="false">Available</option>
               <option value="true">Sold</option>
+            </select>
+            <select
+              value={approvalFilter}
+              onChange={(e) => setApprovalFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">All approvals</option>
+              <option value="pending">Pending approval</option>
+              <option value="approved">Approved</option>
+              <option value="rejected">Rejected</option>
             </select>
 
             <Button type="submit" onClick={handleSearch}>
@@ -376,12 +403,23 @@ export default function AdminCarsPage() {
                               </>
                             )}
                           </span>
+                          <span className={`ml-2 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                            car.approval_status === 'approved' ? 'bg-green-100 text-green-800' : car.approval_status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {car.approval_status}
+                          </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {formatDate(car.created_at)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex items-center justify-end space-x-2">
+                            {car.approval_status === 'pending' && (
+                              <>
+                                <Button size="sm" loading={updating === car.car_id} onClick={() => handleApproval(car, 'approved')}>Approve</Button>
+                                <Button variant="outline" size="sm" loading={updating === car.car_id} onClick={() => handleApproval(car, 'rejected')}>Reject</Button>
+                              </>
+                            )}
                             <Link href={`/cars/${car.car_id}`}>
                               <Button variant="outline" size="sm">
                                 <Eye className="h-4 w-4 mr-1" />
@@ -512,7 +550,7 @@ export default function AdminCarsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Price (USD)</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Price (UGX)</label>
                   <input
                     type="number"
                     step="0.01"

@@ -10,7 +10,9 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
+    address TEXT,
     user_type TEXT CHECK (user_type IN ('seller', 'buyer', 'admin')) DEFAULT 'buyer',
+    is_premium BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -28,18 +30,23 @@ CREATE TABLE cars (
     brand_id UUID NOT NULL REFERENCES car_brands(brand_id),
     model VARCHAR(200) NOT NULL,
     title VARCHAR(200) NOT NULL,
+    chassis_number VARCHAR(100) NOT NULL UNIQUE,
     description TEXT,
     body_type TEXT CHECK (body_type IN ('sedan', 'hatchback', 'suv', 'coupe', 'convertible', 'wagon', 'pickup', 'van', 'minivan')) NOT NULL,
     fuel_type TEXT CHECK (fuel_type IN ('gasoline', 'diesel', 'electric', 'hybrid', 'cng', 'lpg')) NOT NULL,
     year INTEGER NOT NULL,
     price DECIMAL(12,2) NOT NULL,
-    currency VARCHAR(3) DEFAULT 'USD',
+    currency VARCHAR(3) DEFAULT 'UGX',
     mileage INTEGER,
     color VARCHAR(30),
     engine_size VARCHAR(20),
     transmission TEXT CHECK (transmission IN ('manual', 'automatic', 'cvt', 'semi-automatic')) NOT NULL,
+    drive_type TEXT CHECK (drive_type IN ('2wd', '4wd')) NOT NULL,
     features TEXT, -- JSON or comma-separated string
     is_sold BOOLEAN DEFAULT FALSE,
+    approval_status TEXT NOT NULL CHECK (approval_status IN ('pending', 'approved', 'rejected')) DEFAULT 'pending',
+    approved_at TIMESTAMP WITH TIME ZONE,
+    approved_by UUID REFERENCES users(user_id),
     image_urls TEXT[] NOT NULL DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -50,6 +57,7 @@ CREATE INDEX idx_cars_brand ON cars(brand_id);
 CREATE INDEX idx_cars_price ON cars(price);
 CREATE INDEX idx_cars_year ON cars(year);
 CREATE INDEX idx_cars_sold ON cars(is_sold);
+CREATE INDEX idx_cars_approval_status ON cars(approval_status);
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_brands_name ON car_brands(brand_name);
 

@@ -8,24 +8,51 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient()
     const { id } = await params
+    const supabase = await createClient()
+    const cookieStore = await cookies()
+    const sessionCookie = cookieStore.get('session')
+    const sessionData = sessionCookie ? JSON.parse(sessionCookie.value) : null
     
     const { data: car, error } = await supabase
       .from('cars')
       .select(`
         *,
         car_brands!inner(brand_id, brand_name),
-        users!inner(user_id, fullname, email, phone)
+        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
       `)
       .eq('car_id', id)
       .single()
 
-    if (error) {
+    if (error || !car) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ car })
+    const canViewUnapproved = sessionData?.userType === 'admin' || sessionData?.userId === car.seller_id
+    if (car.approval_status !== 'approved' && !canViewUnapproved) {
+      return NextResponse.json({ error: 'Car not found' }, { status: 404 })
+    }
+
+    const { data: adminContact } = car.users.is_premium
+      ? { data: null }
+      : await supabase
+          .from('users')
+          .select('fullname, email, phone')
+          .eq('user_type', 'admin')
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+
+    const contact = car.users.is_premium
+      ? { fullname: car.users.fullname, email: car.users.email, phone: car.users.phone, is_seller: true }
+      : { ...(adminContact || { fullname: 'Kampala Cars', email: '', phone: null }), is_seller: false }
+
+    const isPrivateViewer = sessionData?.userType === 'admin' || sessionData?.userId === car.seller_id
+    const safeCar = !isPrivateViewer && !car.users.is_premium
+      ? { ...car, users: { user_id: car.users.user_id, fullname: car.users.fullname, is_premium: false } }
+      : car
+
+    return NextResponse.json({ car: { ...safeCar, contact } })
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -101,13 +128,17 @@ export async function PUT(
         transmission,
         features,
         image_urls,
-        is_sold: is_sold !== undefined ? is_sold : undefined
+        is_sold: is_sold !== undefined ? is_sold : undefined,
+        // Any owner edit must be reviewed again before being public.
+        approval_status: 'pending',
+        approved_at: null,
+        approved_by: null
       })
       .eq('car_id', id)
       .select(`
         *,
         car_brands!inner(brand_id, brand_name),
-        users!inner(user_id, fullname, email, phone)
+        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
       `)
       .single()
 

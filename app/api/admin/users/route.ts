@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from('users')
-      .select('user_id, fullname, email, phone, user_type, created_at')
+      .select('user_id, fullname, email, phone, user_type, is_premium, created_at')
       .order('created_at', { ascending: false })
 
     // Apply filters
@@ -84,7 +84,7 @@ export async function PUT(request: NextRequest) {
 
     const supabase = await createClient()
     const body = await request.json()
-    const { user_id, fullname, email, phone, user_type } = body
+    const { user_id, fullname, email, phone, user_type, is_premium } = body
 
     if (!user_id) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
@@ -96,10 +96,11 @@ export async function PUT(request: NextRequest) {
         fullname,
         email,
         phone,
-        user_type
+        user_type,
+        is_premium: Boolean(is_premium)
       })
       .eq('user_id', user_id)
-      .select('user_id, fullname, email, phone, user_type, created_at')
+      .select('user_id, fullname, email, phone, user_type, is_premium, created_at')
       .single()
 
     if (error) {

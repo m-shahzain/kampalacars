@@ -8,6 +8,7 @@ type CustomUser = {
   fullname: string
   phone?: string
   user_type: 'seller' | 'buyer' | 'admin'
+  is_premium: boolean
   created_at: string
 }
 
@@ -21,7 +22,7 @@ interface AuthContextType {
   profile: Profile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, fullName: string, userType?: 'buyer' | 'seller') => Promise<{ error: any }>
+  signUp: (email: string, password: string, fullName: string, phone: string, address: string, userType?: 'buyer' | 'seller') => Promise<{ error: any }>
   signOut: () => Promise<void>
   updateProfile: (data: { full_name: string; phone: string }) => Promise<{ error: any }>
 }
@@ -85,7 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signUp = async (email: string, password: string, fullName: string, userType: 'buyer' | 'seller' = 'buyer') => {
+  const signUp = async (email: string, password: string, fullName: string, phone: string, address: string, userType: 'buyer' | 'seller' = 'buyer') => {
     try {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
@@ -96,6 +97,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email, 
           password, 
           fullname: fullName,
+          phone,
+          address,
           user_type: userType 
         }),
       })

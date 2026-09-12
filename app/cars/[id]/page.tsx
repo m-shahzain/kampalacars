@@ -189,8 +189,13 @@ export default function CarDetailsPage() {
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
                   <User className="h-5 w-5 mx-auto text-orange-600 mb-1" />
                   <p className="text-xs text-gray-500">Seller</p>
-                  <p className="text-sm font-semibold">{car.users?.fullname || 'Private'}</p>
+                  <p className="text-sm font-semibold">{car.contact?.fullname || 'Kampala Cars'}</p>
                 </div>
+              </div>
+
+              <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mb-4">
+                {car.drive_type && <span><strong className="text-gray-900">Drive:</strong> {car.drive_type.toUpperCase()}</span>}
+                {car.chassis_number && <span><strong className="text-gray-900">Chassis No.:</strong> {car.chassis_number}</span>}
               </div>
 
               <div>
@@ -213,20 +218,22 @@ export default function CarDetailsPage() {
               </div>
 
               <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-900 mb-2">Seller Information</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                  {car.contact?.is_seller ? 'Seller Information' : 'Kampala Cars Contact'}
+                </h3>
                 <div className="space-y-2">
                   <div className="flex items-center">
                     <User className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-sm">{car.users?.fullname || car.users?.email}</span>
+                    <span className="text-sm">{car.contact?.fullname || 'Kampala Cars'}</span>
                   </div>
                   <div className="flex items-center">
                     <Mail className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-sm">{car.users?.email}</span>
+                    <span className="text-sm">{car.contact?.email}</span>
                   </div>
-                  {car.users?.phone && (
+                  {car.contact?.phone && (
                     <div className="flex items-center">
                       <Phone className="h-4 w-4 text-gray-400 mr-2" />
-                      <span className="text-sm">{car.users.phone}</span>
+                      <span className="text-sm">{car.contact.phone}</span>
                     </div>
                   )}
                 </div>
@@ -239,16 +246,16 @@ export default function CarDetailsPage() {
                   onClick={() => setShowContactForm(!showContactForm)}
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  Contact Seller
+                  Contact {car.contact?.is_seller ? 'Seller' : 'Kampala Cars'}
                 </Button>
-                {car.users?.phone && (
+                {car.contact?.phone && (
                   <Button
                     variant="outline"
                     className="w-full"
-                    onClick={() => window.open(`tel:${car.users?.phone}`)}
+                      onClick={() => window.open(`tel:${car.contact?.phone}`)}
                   >
                     <Phone className="h-4 w-4 mr-2" />
-                    Call Seller
+                    Call {car.contact?.is_seller ? 'Seller' : 'Kampala Cars'}
                   </Button>
                 )}
               </div>

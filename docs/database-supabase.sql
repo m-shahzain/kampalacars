@@ -45,7 +45,7 @@ CREATE TABLE cars (
     fuel_type TEXT CHECK (fuel_type IN ('gasoline', 'diesel', 'electric', 'hybrid', 'cng', 'lpg')) NOT NULL,
     year INTEGER NOT NULL,
     price DECIMAL(12,2) NOT NULL,
-    currency VARCHAR(3) DEFAULT 'USD',
+    currency VARCHAR(3) DEFAULT 'UGX',
     mileage INTEGER,
     color VARCHAR(30),
     engine_size VARCHAR(20),

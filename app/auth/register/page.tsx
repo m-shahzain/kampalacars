@@ -6,12 +6,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/Button";
-import { Car, Mail, Lock, User, AlertCircle, CheckCircle } from "lucide-react";
+import { Car, Mail, Lock, User, Phone, MapPin, AlertCircle, CheckCircle } from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    phone: "",
+    address: "",
     password: "",
     confirmPassword: "",
     userType: "buyer" as "buyer",
@@ -23,7 +25,7 @@ export default function RegisterPage() {
   const { signUp } = useAuth();
   const router = useRouter();
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -48,6 +50,8 @@ export default function RegisterPage() {
       formData.email,
       formData.password,
       formData.fullName,
+      formData.phone,
+      formData.address,
       formData.userType
     );
 
@@ -143,6 +147,24 @@ export default function RegisterPage() {
                     className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="you@example.com"
                   />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <input id="phone" name="phone" type="tel" autoComplete="tel" required value={formData.phone} onChange={handleChange}
+                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+256 700 000 000" />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <textarea id="address" name="address" required value={formData.address} onChange={handleChange} rows={2}
+                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Your area, city, and street address" />
                 </div>
               </div>
 

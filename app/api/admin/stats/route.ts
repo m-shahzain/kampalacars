@@ -97,7 +97,7 @@ export async function GET() {
         title,
         created_at,
         car_brands!inner(brand_name),
-        users!inner(fullname)
+        users!cars_seller_id_fkey!inner(fullname)
       `)
       .order('created_at', { ascending: false })
       .limit(5)

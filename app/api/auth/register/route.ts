@@ -5,10 +5,10 @@ import { cookies } from 'next/headers'
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
-    const { email, password, fullname, phone, user_type = 'buyer' } = await request.json()
+    const { email, password, fullname, phone, address, user_type = 'buyer' } = await request.json()
 
-    if (!email || !password || !fullname) {
-      return NextResponse.json({ error: 'Email, password, and full name are required' }, { status: 400 })
+    if (!email || !password || !fullname || !phone || !address) {
+      return NextResponse.json({ error: 'Email, password, full name, phone, and address are required' }, { status: 400 })
     }
 
     // Check if user already exists
@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
         password, // Plain text password
         fullname,
         phone,
+        address,
         user_type
       })
       .select()
@@ -62,6 +63,7 @@ export async function POST(request: NextRequest) {
         fullname: user.fullname,
         phone: user.phone,
         user_type: user.user_type,
+        is_premium: user.is_premium,
         created_at: user.created_at
       }
     })

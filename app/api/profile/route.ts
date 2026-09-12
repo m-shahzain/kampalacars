@@ -45,14 +45,13 @@ export async function PUT(request: NextRequest) {
     const supabase = await createClient()
     
     const body = await request.json()
-    const { fullname, phone, user_type } = body
+    const { fullname, phone } = body
 
     const { data: user, error } = await supabase
       .from('users')
       .update({
         fullname,
-        phone,
-        user_type
+        phone
       })
       .eq('user_id', sessionData.userId)
       .select('user_id, fullname, email, phone, user_type, created_at')
