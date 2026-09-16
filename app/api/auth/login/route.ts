@@ -2,6 +2,10 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
 
+// Keep the login across browser refreshes and application restarts. Browsers
+// still impose a maximum cookie lifetime, so use a long, explicit duration.
+const SESSION_MAX_AGE = 60 * 60 * 24 * 365
+
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -36,7 +40,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 60 * 24 * 7 // 7 days
+      maxAge: SESSION_MAX_AGE
     })
 
     return NextResponse.json({ 

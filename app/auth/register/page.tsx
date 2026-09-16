@@ -110,7 +110,7 @@ export default function RegisterPage() {
                   htmlFor="fullName"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Full Name
+                  Name/Company
                 </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -122,7 +122,7 @@ export default function RegisterPage() {
                     value={formData.fullName}
                     onChange={handleChange}
                     className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="John Doe"
+                    placeholder="Your name or company"
                   />
                 </div>
               </div>
