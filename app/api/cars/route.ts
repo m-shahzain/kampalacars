@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
         *,
         car_brands!inner(brand_id, brand_name),
         users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
-      `
+      `,
+        { count: "exact" }
       )
       .order("created_at", { ascending: false });
 
@@ -90,29 +91,57 @@ export async function GET(request: NextRequest) {
       query = query.lte("mileage", parseInt(max_mileage));
     }
 
-    // Get total count for pagination
-    const { count } = await query;
-
-    // Apply pagination
-    const { data: cars, error } = await query.range(offset, offset + limit - 1);
+    // Fetch this page and the exact matching total in one request.
+    // The count is used by the client to decide whether to enable "Next".
+    const {
+      data: cars,
+      error,
+      count,
+    } = await query.range(offset, offset + limit - 1);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    const adminContact = !mine && cars?.some((car) => !car.users?.is_premium)
-      ? (await supabase.from("users").select("fullname, email, phone").eq("user_type", "admin").order("created_at", { ascending: true }).limit(1).maybeSingle()).data
-      : null;
+    const adminContact =
+      !mine && cars?.some((car) => !car.users?.is_premium)
+        ? (
+            await supabase
+              .from("users")
+              .select("fullname, email, phone")
+              .eq("user_type", "admin")
+              .order("created_at", { ascending: true })
+              .limit(1)
+              .maybeSingle()
+          ).data
+        : null;
 
     const carsWithContact = cars?.map((car) => ({
       ...car,
       // A standard seller's details must never be exposed by the public API.
-      users: !mine && !car.users?.is_premium
-        ? { user_id: car.users.user_id, fullname: car.users.fullname, is_premium: false }
-        : car.users,
+      users:
+        !mine && !car.users?.is_premium
+          ? {
+              user_id: car.users.user_id,
+              fullname: car.users.fullname,
+              is_premium: false,
+            }
+          : car.users,
       contact: car.users?.is_premium
-        ? { fullname: car.users.fullname, email: car.users.email, phone: car.users.phone, is_seller: true }
-        : { ...(adminContact || { fullname: "Kampala Cars", email: "", phone: null }), is_seller: false },
+        ? {
+            fullname: car.users.fullname,
+            email: car.users.email,
+            phone: car.users.phone,
+            is_seller: true,
+          }
+        : {
+            ...(adminContact || {
+              fullname: "Kampala Cars",
+              email: "",
+              phone: null,
+            }),
+            is_seller: false,
+          },
     }));
 
     return NextResponse.json({
@@ -253,7 +282,11 @@ export async function POST(request: NextRequest) {
 
       const duplicateChassis = error.code === "23505";
       return NextResponse.json(
-        { error: duplicateChassis ? "A car with this chassis number is already listed" : error.message },
+        {
+          error: duplicateChassis
+            ? "A car with this chassis number is already listed"
+            : error.message,
+        },
         { status: duplicateChassis ? 409 : 400 }
       );
     }
