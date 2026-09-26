@@ -4,7 +4,7 @@ import { cookies } from 'next/headers'
 
 // Keep the login across browser refreshes and application restarts. Browsers
 // still impose a maximum cookie lifetime, so use a long, explicit duration.
-const SESSION_MAX_AGE = 60 * 60 * 24 * 365
+const SESSION_MAX_AGE = 60 * 60 * 24 * 30
 
 export async function POST(request: NextRequest) {
   try {
