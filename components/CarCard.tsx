@@ -6,7 +6,8 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { CarWithBrand } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
-import { Fuel, Gauge, Car as CarIcon } from 'lucide-react'
+import { fallbackToOriginalCarImage, getCarImageSources } from '@/lib/car-image'
+import { Fuel, Gauge, Car as CarIcon, UserRound } from 'lucide-react'
 
 interface CarCardProps {
   car: CarWithBrand
@@ -15,6 +16,8 @@ interface CarCardProps {
 
 export function CarCard({ car, priority = false }: CarCardProps) {
   const [imgError, setImgError] = useState(false)
+  const [profileImageError, setProfileImageError] = useState(false)
+  const carImage = getCarImageSources(car.image_urls?.[0])
 
   return (
     <Link href={`/cars/${car.car_id}`} className="group block">
@@ -25,14 +28,17 @@ export function CarCard({ car, priority = false }: CarCardProps) {
               <CarIcon className="h-12 w-12 text-gray-300" />
             </div>
           ) : (
-            <Image
-              src={car.image_urls?.[0] || '/car-placeholder.svg'}
+            <img
+              src={carImage?.src || '/car-placeholder.svg'}
+              srcSet={carImage?.srcSet}
+              sizes={carImage?.sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
               alt={`${car.car_brands.brand_name} ${car.model}`}
-              fill
-              className="object-cover group-hover:scale-[1.02] transition-transform duration-200"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              priority={priority}
-              onError={() => setImgError(true)}
+              className="absolute inset-0 h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-200"
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
+              onError={(event) => {
+                if (!fallbackToOriginalCarImage(event, car.image_urls?.[0])) setImgError(true)
+              }}
             />
           )}
           {car.is_sold && (
@@ -66,6 +72,24 @@ export function CarCard({ car, priority = false }: CarCardProps) {
               {car.fuel_type}
             </span>
             <span className="capitalize">{car.transmission}</span>
+          </div>
+
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-500">
+            {car.users?.profile_picture_url && !profileImageError ? (
+              <Image
+                src={car.users.profile_picture_url}
+                alt=""
+                width={24}
+                height={24}
+                className="h-6 w-6 rounded-full object-cover"
+                onError={() => setProfileImageError(true)}
+              />
+            ) : (
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gray-100">
+                <UserRound className="h-3.5 w-3.5 text-gray-400" />
+              </span>
+            )}
+            <span className="truncate">Listed by {car.users?.fullname || 'Kampala Cars'}</span>
           </div>
         </div>
       </div>

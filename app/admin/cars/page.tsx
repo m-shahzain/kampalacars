@@ -21,7 +21,7 @@ import {
 } from 'lucide-react'
 import { formatPrice, formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import Image from 'next/image'
+import { fallbackToOriginalCarImage, getCarImageSources } from '@/lib/car-image'
 
 interface CarsPagination {
   page: number
@@ -347,12 +347,15 @@ export default function AdminCarsPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-16 w-24">
-                              <Image
-                                src={car.image_urls?.[0] || '/car-placeholder.svg'}
+                              <img
+                                {...getCarImageSources(car.image_urls?.[0])}
+                                src={getCarImageSources(car.image_urls?.[0])?.src || '/car-placeholder.svg'}
                                 alt={`${car.car_brands.brand_name} ${car.model}`}
                                 width={96}
                                 height={64}
                                 className="h-16 w-24 rounded-md object-cover"
+                                loading="lazy"
+                                onError={(event) => fallbackToOriginalCarImage(event, car.image_urls?.[0])}
                               />
                             </div>
                             <div className="ml-4">

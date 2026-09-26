@@ -1,78 +1,92 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
-import { Layout } from '@/components/Layout'
-import { Button } from '@/components/ui/Button'
-import { CarWithBrand } from '@/lib/types'
-import { formatPrice, formatDate } from '@/lib/utils'
-import { Calendar, DollarSign, User, Phone, Mail, ArrowLeft, Heart, Share2 } from 'lucide-react'
-import Image from 'next/image'
-import Link from 'next/link'
+import { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/Button";
+import { CarWithBrand } from "@/lib/types";
+import { formatPrice, formatDate } from "@/lib/utils";
+import {
+  Calendar,
+  DollarSign,
+  User,
+  Phone,
+  Mail,
+  ArrowLeft,
+  Heart,
+  Share2,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { fallbackToOriginalCarImage, getCarImageSources } from "@/lib/car-image";
 
 export default function CarDetailsPage() {
-  const [car, setCar] = useState<CarWithBrand | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [activeImage, setActiveImage] = useState(0)
-  const [showContactForm, setShowContactForm] = useState(false)
+  const [car, setCar] = useState<CarWithBrand | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeImage, setActiveImage] = useState(0);
+  const [sellerImageError, setSellerImageError] = useState(false);
+  const [showContactForm, setShowContactForm] = useState(false);
   const [contactForm, setContactForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    message: ''
-  })
-  
-  const params = useParams()
-  const carId = params.id as string
+    name: "",
+    email: "",
+    phone: "",
+    message: "",
+  });
+
+  const params = useParams();
+  const carId = params.id as string;
+  const activeCarImage = getCarImageSources(car?.image_urls?.[activeImage]);
 
   useEffect(() => {
-    fetchCarDetails()
-  }, [carId])
+    fetchCarDetails();
+  }, [carId]);
 
   const fetchCarDetails = async () => {
     try {
-      const response = await fetch(`/api/cars/${carId}`)
-      const data = await response.json()
-      
+      const response = await fetch(`/api/cars/${carId}`);
+      const data = await response.json();
+
       if (response.ok) {
-        setCar(data.car)
+        setCar(data.car);
       } else {
-        console.error('Car not found')
+        console.error("Car not found");
       }
     } catch (error) {
-      console.error('Error fetching car:', error)
+      console.error("Error fetching car:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleContactSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     // In a real app, this would send an email or message to the seller
-    alert('Message sent to seller successfully!')
-    setShowContactForm(false)
-    setContactForm({ name: '', email: '', phone: '', message: '' })
-  }
+    alert("Message sent to seller successfully!");
+    setShowContactForm(false);
+    setContactForm({ name: "", email: "", phone: "", message: "" });
+  };
 
   const handleShare = async () => {
     if (navigator.share) {
       try {
         await navigator.share({
           title: `${car?.car_brands.brand_name} ${car?.model}`,
-          text: `Check out this ${car?.car_brands.brand_name} ${car?.model} for ${formatPrice(car?.price || 0)}`,
+          text: `Check out this ${car?.car_brands.brand_name} ${
+            car?.model
+          } for ${formatPrice(car?.price || 0)}`,
           url: window.location.href,
-        })
+        });
       } catch (error) {
         // Fallback to copying to clipboard
-        navigator.clipboard.writeText(window.location.href)
-        alert('Link copied to clipboard!')
+        navigator.clipboard.writeText(window.location.href);
+        alert("Link copied to clipboard!");
       }
     } else {
       // Fallback to copying to clipboard
-      navigator.clipboard.writeText(window.location.href)
-      alert('Link copied to clipboard!')
+      navigator.clipboard.writeText(window.location.href);
+      alert("Link copied to clipboard!");
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -86,15 +100,19 @@ export default function CarDetailsPage() {
           </div>
         </div>
       </Layout>
-    )
+    );
   }
 
   if (!car) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8 text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Car Not Found</h1>
-          <p className="text-gray-600 mb-4">The car you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Car Not Found
+          </h1>
+          <p className="text-gray-600 mb-4">
+            The car you're looking for doesn't exist.
+          </p>
           <Link href="/">
             <Button>
               <ArrowLeft className="h-4 w-4 mr-2" />
@@ -103,7 +121,7 @@ export default function CarDetailsPage() {
           </Link>
         </div>
       </Layout>
-    )
+    );
   }
 
   return (
@@ -122,12 +140,16 @@ export default function CarDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <div className="relative aspect-[16/9] w-full mb-2 rounded-lg overflow-hidden">
-              <Image
-                src={car.image_urls?.[activeImage] || '/car-placeholder.svg'}
+              <img
+                src={activeCarImage?.src || "/car-placeholder.svg"}
+                srcSet={activeCarImage?.srcSet}
+                sizes={activeCarImage?.sizes}
                 alt={`${car.car_brands.brand_name} ${car.model}`}
-                fill
-                className="object-cover"
-                priority
+                className="absolute inset-0 h-full w-full object-cover"
+                fetchPriority="high"
+                onError={(event) =>
+                  fallbackToOriginalCarImage(event, car.image_urls?.[activeImage])
+                }
               />
               {car.image_urls?.length > 1 && (
                 <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
@@ -143,10 +165,18 @@ export default function CarDetailsPage() {
                     key={i}
                     onClick={() => setActiveImage(i)}
                     className={`relative w-16 h-12 rounded-md overflow-hidden shrink-0 border-2 transition-all ${
-                      i === activeImage ? 'border-blue-600' : 'border-transparent opacity-70 hover:opacity-100'
+                      i === activeImage
+                        ? "border-blue-600"
+                        : "border-transparent opacity-70 hover:opacity-100"
                     }`}
                   >
-                    <Image src={url} alt={`Thumbnail ${i + 1}`} fill className="object-cover" />
+                    <img
+                      {...getCarImageSources(url)}
+                      alt={`Thumbnail ${i + 1}`}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                      onError={(event) => fallbackToOriginalCarImage(event, url)}
+                    />
                   </button>
                 ))}
               </div>
@@ -179,27 +209,45 @@ export default function CarDetailsPage() {
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
                   <DollarSign className="h-5 w-5 mx-auto text-green-600 mb-1" />
                   <p className="text-xs text-gray-500">Price</p>
-                  <p className="text-sm font-semibold text-green-600">{formatPrice(car.price)}</p>
+                  <p className="text-sm font-semibold text-green-600">
+                    {formatPrice(car.price)}
+                  </p>
                 </div>
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
                   <Calendar className="h-5 w-5 mx-auto text-purple-600 mb-1" />
                   <p className="text-xs text-gray-500">Listed</p>
-                  <p className="text-sm font-semibold">{formatDate(car.created_at)}</p>
+                  <p className="text-sm font-semibold">
+                    {formatDate(car.created_at)}
+                  </p>
                 </div>
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
                   <User className="h-5 w-5 mx-auto text-orange-600 mb-1" />
                   <p className="text-xs text-gray-500">Seller</p>
-                  <p className="text-sm font-semibold">{car.contact?.fullname || 'Kampala Cars'}</p>
+                  <p className="text-sm font-semibold">
+                    {car.contact?.fullname || "Kampala Cars"}
+                  </p>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-600 mb-4">
-                {car.drive_type && <span><strong className="text-gray-900">Drive:</strong> {car.drive_type.toUpperCase()}</span>}
-                {car.chassis_number && <span><strong className="text-gray-900">Chassis No.:</strong> {car.chassis_number}</span>}
+                {car.drive_type && (
+                  <span>
+                    <strong className="text-gray-900">Drive:</strong>{" "}
+                    {car.drive_type.toUpperCase()}
+                  </span>
+                )}
+                {car.chassis_number && (
+                  <span>
+                    <strong className="text-gray-900">Chassis No.:</strong>{" "}
+                    {car.chassis_number}
+                  </span>
+                )}
               </div>
 
               <div>
-                <h2 className="text-base font-semibold text-gray-900 mb-2">Description</h2>
+                <h2 className="text-base font-semibold text-gray-900 mb-2">
+                  Description
+                </h2>
                 <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                   {car.description}
                 </p>
@@ -219,13 +267,39 @@ export default function CarDetailsPage() {
 
               <div className="mb-4">
                 <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                  {car.contact?.is_seller ? 'Seller Information' : 'Kampala Cars Contact'}
+                  {car.contact?.is_seller
+                    ? "Seller Information"
+                    : "Kampala Cars Contact"}
                 </h3>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <User className="h-4 w-4 text-gray-400 mr-2" />
-                    <span className="text-sm">{car.contact?.fullname || 'Kampala Cars'}</span>
+                <div className="flex items-center gap-3 mb-3">
+                  {car.contact?.is_seller &&
+                  car.users?.profile_picture_url &&
+                  !sellerImageError ? (
+                    <Image
+                      src={car.users.profile_picture_url}
+                      alt={`${car.users.fullname}'s display picture`}
+                      width={80}
+                      height={80}
+                      className="h-20 w-20 rounded-full object-cover"
+                      onError={() => setSellerImageError(true)}
+                    />
+                  ) : (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gray-100">
+                      <User className="h-10 w-10 text-gray-400" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">
+                      {car.contact?.fullname || "Kampala Cars"}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {car.contact?.is_seller
+                        ? "Seller"
+                        : "Marketplace contact"}
+                    </p>
                   </div>
+                </div>
+                <div className="space-y-2">
                   <div className="flex items-center">
                     <Mail className="h-4 w-4 text-gray-400 mr-2" />
                     <span className="text-sm">{car.contact?.email}</span>
@@ -246,29 +320,34 @@ export default function CarDetailsPage() {
                   onClick={() => setShowContactForm(!showContactForm)}
                 >
                   <Mail className="h-4 w-4 mr-2" />
-                  Contact {car.contact?.is_seller ? 'Seller' : 'Kampala Cars'}
+                  Contact {car.contact?.is_seller ? "Seller" : "Kampala Cars"}
                 </Button>
                 {car.contact?.phone && (
                   <Button
                     variant="outline"
                     className="w-full"
-                      onClick={() => window.open(`tel:${car.contact?.phone}`)}
+                    onClick={() => window.open(`tel:${car.contact?.phone}`)}
                   >
                     <Phone className="h-4 w-4 mr-2" />
-                    Call {car.contact?.is_seller ? 'Seller' : 'Kampala Cars'}
+                    Call {car.contact?.is_seller ? "Seller" : "Kampala Cars"}
                   </Button>
                 )}
               </div>
 
               {/* Contact Form */}
               {showContactForm && (
-                <form onSubmit={handleContactSubmit} className="mt-6 space-y-4 border-t pt-4">
+                <form
+                  onSubmit={handleContactSubmit}
+                  className="mt-6 space-y-4 border-t pt-4"
+                >
                   <div>
                     <input
                       type="text"
                       placeholder="Your Name"
                       value={contactForm.name}
-                      onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                      onChange={(e) =>
+                        setContactForm({ ...contactForm, name: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -278,7 +357,12 @@ export default function CarDetailsPage() {
                       type="email"
                       placeholder="Your Email"
                       value={contactForm.email}
-                      onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          email: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -288,7 +372,12 @@ export default function CarDetailsPage() {
                       type="tel"
                       placeholder="Your Phone (Optional)"
                       value={contactForm.phone}
-                      onChange={(e) => setContactForm({...contactForm, phone: e.target.value})}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          phone: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -297,7 +386,12 @@ export default function CarDetailsPage() {
                       placeholder="Your Message"
                       rows={3}
                       value={contactForm.message}
-                      onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                      onChange={(e) =>
+                        setContactForm({
+                          ...contactForm,
+                          message: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
                     />
@@ -312,5 +406,5 @@ export default function CarDetailsPage() {
         </div>
       </div>
     </Layout>
-  )
-} 
+  );
+}

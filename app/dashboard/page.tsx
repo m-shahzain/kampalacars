@@ -7,15 +7,21 @@ import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
 import { CarWithBrand } from '@/lib/types'
 import { formatPrice, formatDate } from '@/lib/utils'
-import { Plus, Edit, Trash2, Eye, User, Phone, Mail, Settings, Car as CarIcon } from 'lucide-react'
-import Image from 'next/image'
+import { Plus, Edit, Trash2, Eye, User, Phone, Mail, Settings, Car as CarIcon, ImagePlus, X } from 'lucide-react'
+import { fallbackToOriginalCarImage, getCarImageSources } from '@/lib/car-image'
 
 export default function DashboardPage() {
   const [cars, setCars] = useState<CarWithBrand[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [editingProfile, setEditingProfile] = useState(false)
+  const [savingProfile, setSavingProfile] = useState(false)
+  const [profileError, setProfileError] = useState('')
+  const [profileForm, setProfileForm] = useState({ full_name: '', phone: '' })
+  const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null)
+  const [profilePicturePreview, setProfilePicturePreview] = useState('')
   
-  const { user, profile } = useAuth()
+  const { user, profile, updateProfile } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
@@ -27,6 +33,40 @@ export default function DashboardPage() {
       fetchUserCars()
     }
   }, [user, router])
+
+  const openProfileEditor = () => {
+    setProfileForm({ full_name: user?.fullname || '', phone: user?.phone || '' })
+    setNewProfilePicture(null)
+    setProfilePicturePreview(user?.profile_picture_url || '')
+    setProfileError('')
+    setEditingProfile(true)
+  }
+
+  const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      setProfileError('Choose a JPG, PNG, or WebP image no larger than 2 MB.')
+      event.target.value = ''
+      return
+    }
+
+    setProfileError('')
+    setNewProfilePicture(file)
+    setProfilePicturePreview(URL.createObjectURL(file))
+  }
+
+  const handleProfileSave = async (event: React.FormEvent) => {
+    event.preventDefault()
+    setSavingProfile(true)
+    setProfileError('')
+
+    const { error } = await updateProfile(profileForm, newProfilePicture)
+    if (error) setProfileError(error.message)
+    else setEditingProfile(false)
+    setSavingProfile(false)
+  }
 
   const fetchUserCars = async () => {
     try {
@@ -131,16 +171,78 @@ export default function DashboardPage() {
         </div>
         )}
 
+        {editingProfile && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+            <form onSubmit={handleProfileSave} className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+              <div className="mb-5 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Edit Profile</h2>
+                <button type="button" onClick={() => setEditingProfile(false)} className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700" aria-label="Close profile editor">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="mb-4 flex items-center gap-3">
+                {profilePicturePreview ? (
+                  <img src={profilePicturePreview} alt="Profile picture preview" className="h-16 w-16 rounded-full border border-gray-200 object-cover" />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                    <User className="h-7 w-7 text-gray-400" />
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="editProfilePicture" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    <ImagePlus className="h-4 w-4" />
+                    {profilePicturePreview ? 'Change picture' : 'Upload picture'}
+                  </label>
+                  <input id="editProfilePicture" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleProfilePictureChange} className="sr-only" />
+                  <p className="mt-1 text-xs text-gray-500">JPG, PNG, or WebP; max 2 MB.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="profileFullName" className="mb-1 block text-sm font-medium text-gray-700">Name/Company</label>
+                  <input id="profileFullName" required value={profileForm.full_name} onChange={(event) => setProfileForm({ ...profileForm, full_name: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label htmlFor="profilePhone" className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
+                  <input id="profilePhone" required type="tel" value={profileForm.phone} onChange={(event) => setProfileForm({ ...profileForm, phone: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+              </div>
+
+              {profileError && <p className="mt-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">{profileError}</p>}
+
+              <div className="mt-6 flex justify-end gap-3">
+                <Button type="button" variant="outline" onClick={() => setEditingProfile(false)}>Cancel</Button>
+                <Button type="submit" loading={savingProfile}>Save Changes</Button>
+              </div>
+            </form>
+          </div>
+        )}
+
         {/* Profile Section */}
         <div className="bg-white rounded-lg shadow mb-8 p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={openProfileEditor}>
               <Settings className="h-4 w-4 mr-2" />
               Edit Profile
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-center">
+              {user.profile_picture_url ? (
+                <img src={user.profile_picture_url} alt="Your display picture" className="mr-3 h-10 w-10 rounded-full object-cover" />
+              ) : (
+                <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-gray-100">
+                  <User className="h-5 w-5 text-gray-400" />
+                </div>
+              )}
+              <div>
+                <p className="text-sm text-gray-600">Display Picture</p>
+                <p className="font-medium">{user.profile_picture_url ? 'Added' : 'Not added'}</p>
+              </div>
+            </div>
             <div className="flex items-center">
               <User className="h-5 w-5 text-gray-400 mr-3" />
               <div>
@@ -184,11 +286,13 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="relative h-16 w-24 flex-shrink-0">
-                        <Image
-                          src={car.image_urls?.[0] || '/car-placeholder.svg'}
+                        <img
+                          {...getCarImageSources(car.image_urls?.[0])}
+                          src={getCarImageSources(car.image_urls?.[0])?.src || '/car-placeholder.svg'}
                           alt={`${car.car_brands.brand_name} ${car.model}`}
-                          fill
-                          className="object-cover rounded-md"
+                          className="absolute inset-0 h-full w-full object-cover rounded-md"
+                          loading="lazy"
+                          onError={(event) => fallbackToOriginalCarImage(event, car.image_urls?.[0])}
                         />
                       </div>
                       <div>

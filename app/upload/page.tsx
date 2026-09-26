@@ -13,6 +13,20 @@ import {
   CheckCircle,
 } from "lucide-react";
 
+const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+async function getResponseData(response: Response) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return response.json();
+  }
+
+  const message = (await response.text()).trim();
+  return { error: message || `Request failed (${response.status})` };
+}
+
 export default function UploadPage() {
   const [brands, setBrands] = useState<CarBrand[]>([]);
   const [formData, setFormData] = useState({
@@ -90,6 +104,22 @@ export default function UploadPage() {
       return;
     }
 
+    const invalidFile = files.find(
+      (file) =>
+        !ALLOWED_IMAGE_TYPES.includes(file.type) ||
+        file.size > MAX_IMAGE_SIZE_BYTES
+    );
+
+    if (invalidFile) {
+      setError(
+        !ALLOWED_IMAGE_TYPES.includes(invalidFile.type)
+          ? "Images must be JPG, PNG, or WebP files"
+          : "Each image must be 4 MB or smaller"
+      );
+      e.target.value = "";
+      return;
+    }
+
     setError("");
 
     setImageFiles((prev) => [...prev, ...files]);
@@ -132,10 +162,14 @@ export default function UploadPage() {
           body: fd,
         });
 
-        const data = await response.json();
+        const data = await getResponseData(response);
 
         if (!response.ok) {
-          throw new Error(data.error || "Image upload failed");
+          throw new Error(
+            response.status === 413
+              ? "Image upload is too large. Each image must be 4 MB or smaller"
+              : data.error || "Image upload failed"
+          );
         }
 
         urls.push(data.url);
@@ -197,7 +231,7 @@ export default function UploadPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await getResponseData(response);
 
       if (response.ok) {
         setSuccess(true);

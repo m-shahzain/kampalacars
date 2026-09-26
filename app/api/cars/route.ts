@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
         `
         *,
         car_brands!inner(brand_id, brand_name),
-        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
+        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium, profile_picture_url)
       `,
         { count: "exact" }
       )
@@ -125,6 +125,7 @@ export async function GET(request: NextRequest) {
               user_id: car.users.user_id,
               fullname: car.users.fullname,
               is_premium: false,
+              profile_picture_url: car.users.profile_picture_url,
             }
           : car.users,
       contact: car.users?.is_premium
@@ -272,7 +273,7 @@ export async function POST(request: NextRequest) {
         `
         *,
         car_brands!inner(brand_id, brand_name),
-        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
+        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium, profile_picture_url)
       `
       )
       .single();

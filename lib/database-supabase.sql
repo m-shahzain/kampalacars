@@ -11,6 +11,7 @@ CREATE TABLE users (
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
     address TEXT,
+    profile_picture_url TEXT,
     user_type TEXT CHECK (user_type IN ('seller', 'buyer', 'admin')) DEFAULT 'buyer',
     is_premium BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

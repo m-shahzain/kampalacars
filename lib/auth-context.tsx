@@ -9,6 +9,7 @@ type CustomUser = {
   phone?: string
   user_type: 'seller' | 'buyer' | 'admin'
   is_premium: boolean
+  profile_picture_url?: string
   created_at: string
 }
 
@@ -22,9 +23,9 @@ interface AuthContextType {
   profile: Profile | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, fullName: string, phone: string, address: string, userType?: 'buyer' | 'seller') => Promise<{ error: any }>
+  signUp: (email: string, password: string, fullName: string, phone: string, address: string, profilePicture: File | null, userType?: 'buyer' | 'seller') => Promise<{ error: any }>
   signOut: () => Promise<void>
-  updateProfile: (data: { full_name: string; phone: string }) => Promise<{ error: any }>
+  updateProfile: (data: { full_name: string; phone: string }, profilePicture?: File | null) => Promise<{ error: any }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -86,21 +87,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const signUp = async (email: string, password: string, fullName: string, phone: string, address: string, userType: 'buyer' | 'seller' = 'buyer') => {
+  const signUp = async (email: string, password: string, fullName: string, phone: string, address: string, profilePicture: File | null, userType: 'buyer' | 'seller' = 'buyer') => {
     try {
+      const formData = new FormData()
+      formData.append('email', email)
+      formData.append('password', password)
+      formData.append('fullname', fullName)
+      formData.append('phone', phone)
+      formData.append('address', address)
+      formData.append('user_type', userType)
+      if (profilePicture) formData.append('profile_picture', profilePicture)
+
       const response = await fetch('/api/auth/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          email, 
-          password, 
-          fullname: fullName,
-          phone,
-          address,
-          user_type: userType 
-        }),
+        body: formData,
       })
 
       const data = await response.json()
@@ -130,17 +130,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const updateProfile = async (data: { full_name: string; phone: string }) => {
+  const updateProfile = async (data: { full_name: string; phone: string }, profilePicture?: File | null) => {
     try {
+      const formData = new FormData()
+      formData.append('fullname', data.full_name)
+      formData.append('phone', data.phone)
+      if (profilePicture) formData.append('profile_picture', profilePicture)
+
       const response = await fetch('/api/profile', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fullname: data.full_name,
-          phone: data.phone
-        }),
+        body: formData,
       })
 
       const result = await response.json()

@@ -5,6 +5,7 @@ export type User = {
   password: string
   phone?: string
   address?: string
+  profile_picture_url?: string
   user_type: 'seller' | 'buyer' | 'admin'
   is_premium: boolean
   created_at: string
@@ -44,7 +45,7 @@ export type Car = {
 
 export type CarWithBrand = Car & {
   car_brands: CarBrand
-  users: Pick<User, 'user_id' | 'fullname' | 'email' | 'phone' | 'is_premium'>
+  users: Pick<User, 'user_id' | 'fullname' | 'email' | 'phone' | 'is_premium' | 'profile_picture_url'>
   contact: Pick<User, 'fullname' | 'email' | 'phone'> & { is_seller: boolean }
 }
 

@@ -17,7 +17,7 @@ export async function GET() {
     // Get user from users table (no profiles table in new schema)
     const { data: user, error } = await supabase
       .from('users')
-      .select('user_id, fullname, email, phone, user_type, is_premium, created_at')
+      .select('user_id, fullname, email, phone, user_type, is_premium, profile_picture_url, created_at')
       .eq('user_id', sessionData.userId)
       .single()
 
@@ -35,6 +35,7 @@ export async function GET() {
         phone: user.phone,
         user_type: user.user_type,
         is_premium: user.is_premium,
+        profile_picture_url: user.profile_picture_url,
         created_at: user.created_at,
         // For backward compatibility with components expecting profile
         profile: {

@@ -17,7 +17,7 @@ export async function GET() {
 
     const { data: user, error } = await supabase
       .from('users')
-      .select('user_id, fullname, email, phone, user_type, created_at')
+      .select('user_id, fullname, email, phone, profile_picture_url, user_type, is_premium, created_at')
       .eq('user_id', sessionData.userId)
       .single()
 
@@ -44,20 +44,61 @@ export async function PUT(request: NextRequest) {
     const sessionData = JSON.parse(sessionCookie.value)
     const supabase = await createClient()
     
-    const body = await request.json()
-    const { fullname, phone } = body
+    const formData = await request.formData()
+    const fullname = formData.get('fullname')?.toString()
+    const phone = formData.get('phone')?.toString()
+    const profilePicture = formData.get('profile_picture')
+
+    if (!fullname || !phone) {
+      return NextResponse.json({ error: 'Full name and phone are required' }, { status: 400 })
+    }
+
+    if (profilePicture instanceof File) {
+      const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+      if (!allowedTypes.includes(profilePicture.type)) {
+        return NextResponse.json({ error: 'Display picture must be a JPG, PNG, or WebP image' }, { status: 400 })
+      }
+      if (profilePicture.size > 2 * 1024 * 1024) {
+        return NextResponse.json({ error: 'Display picture must be 2 MB or smaller' }, { status: 400 })
+      }
+    }
+
+    let profilePictureUrl: string | undefined
+    let uploadedFileName: string | undefined
+    if (profilePicture instanceof File) {
+      const extension = profilePicture.type === 'image/png'
+        ? 'png'
+        : profilePicture.type === 'image/webp'
+          ? 'webp'
+          : 'jpg'
+      uploadedFileName = `profile-pictures/${sessionData.userId}/${Date.now()}.${extension}`
+      const { error: uploadError } = await supabase.storage
+        .from('car-images')
+        .upload(uploadedFileName, profilePicture, { contentType: profilePicture.type, upsert: false })
+
+      if (uploadError) {
+        return NextResponse.json({ error: 'Unable to upload display picture. Please try again.' }, { status: 400 })
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('car-images')
+        .getPublicUrl(uploadedFileName)
+      profilePictureUrl = publicUrl
+    }
 
     const { data: user, error } = await supabase
       .from('users')
       .update({
         fullname,
-        phone
+        phone,
+        ...(profilePictureUrl && { profile_picture_url: profilePictureUrl })
       })
       .eq('user_id', sessionData.userId)
-      .select('user_id, fullname, email, phone, user_type, created_at')
+      .select('user_id, fullname, email, phone, profile_picture_url, user_type, is_premium, created_at')
       .single()
 
     if (error) {
+      if (uploadedFileName) await supabase.storage.from('car-images').remove([uploadedFileName])
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 

@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
         phone: user.phone,
         user_type: user.user_type,
         is_premium: user.is_premium,
+        profile_picture_url: user.profile_picture_url,
         created_at: user.created_at
       }
     })

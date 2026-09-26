@@ -19,7 +19,7 @@ export async function GET(
       .select(`
         *,
         car_brands!inner(brand_id, brand_name),
-        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
+        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium, profile_picture_url)
       `)
       .eq('car_id', id)
       .single()
@@ -49,7 +49,7 @@ export async function GET(
 
     const isPrivateViewer = sessionData?.userType === 'admin' || sessionData?.userId === car.seller_id
     const safeCar = !isPrivateViewer && !car.users.is_premium
-      ? { ...car, users: { user_id: car.users.user_id, fullname: car.users.fullname, is_premium: false } }
+      ? { ...car, users: { user_id: car.users.user_id, fullname: car.users.fullname, is_premium: false, profile_picture_url: car.users.profile_picture_url } }
       : car
 
     return NextResponse.json({ car: { ...safeCar, contact } })
@@ -138,7 +138,7 @@ export async function PUT(
       .select(`
         *,
         car_brands!inner(brand_id, brand_name),
-        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium)
+        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium, profile_picture_url)
       `)
       .single()
 

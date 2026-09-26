@@ -1,6 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { createCarImageVariants } from '@/lib/car-image-variants'
+
+const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,9 +34,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return NextResponse.json({ error: 'File too large' }, { status: 400 })
+    // Keep below the deployment request-body limit so this handler can return JSON.
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      return NextResponse.json({ error: 'Each image must be 4 MB or smaller' }, { status: 400 })
     }
 
     // Generate unique filename
@@ -50,6 +53,15 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    try {
+      const source = Buffer.from(await file.arrayBuffer())
+      await createCarImageVariants(supabase.storage, fileName, source)
+    } catch (variantError) {
+      await supabase.storage.from('car-images').remove([fileName])
+      console.error('Unable to create car image variants:', variantError)
+      return NextResponse.json({ error: 'Unable to optimize image. Please try again.' }, { status: 500 })
     }
 
     // Get public URL

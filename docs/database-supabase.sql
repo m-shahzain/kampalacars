@@ -22,6 +22,7 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password VARCHAR(255) NOT NULL,
     phone VARCHAR(20),
+    profile_picture_url TEXT,
     user_type TEXT CHECK (user_type IN ('seller', 'buyer', 'admin')) DEFAULT 'buyer',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
