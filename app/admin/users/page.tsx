@@ -53,10 +53,12 @@ export default function AdminUsersPage() {
     totalPages: 0
   })
   
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
+    if (authLoading) return
+
     if (!user) {
       router.push('/auth/login')
       return
@@ -68,7 +70,7 @@ export default function AdminUsersPage() {
     }
 
     fetchUsers()
-  }, [user, router, pagination.page, searchQuery, userTypeFilter])
+  }, [user, authLoading, router, pagination.page, searchQuery, userTypeFilter])
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -150,7 +152,7 @@ export default function AdminUsersPage() {
     }
   }
 
-  if (!user || user.user_type !== 'admin') {
+  if (authLoading || !user || user.user_type !== 'admin') {
     return null
   }
 

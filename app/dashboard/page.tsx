@@ -21,10 +21,12 @@ export default function DashboardPage() {
   const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null)
   const [profilePicturePreview, setProfilePicturePreview] = useState('')
   
-  const { user, profile, updateProfile } = useAuth()
+  const { user, profile, loading: authLoading, updateProfile } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
+    if (authLoading) return
+
     if (!user) {
       router.push('/auth/login')
     } else if (user.user_type === 'admin') {
@@ -32,7 +34,7 @@ export default function DashboardPage() {
     } else {
       fetchUserCars()
     }
-  }, [user, router])
+  }, [user, authLoading, router])
 
   const openProfileEditor = () => {
     setProfileForm({ full_name: user?.fullname || '', phone: user?.phone || '' })
@@ -107,7 +109,7 @@ export default function DashboardPage() {
     }
   }
 
-  if (!user) {
+  if (authLoading || !user) {
     return null
   }
 

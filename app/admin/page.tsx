@@ -58,10 +58,12 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
+    if (authLoading) return
+
     if (!user) {
       router.push('/auth/login')
       return
@@ -73,7 +75,7 @@ export default function AdminDashboard() {
     }
 
     fetchStats()
-  }, [user, router])
+  }, [user, authLoading, router])
 
   const fetchStats = async () => {
     try {
@@ -92,7 +94,7 @@ export default function AdminDashboard() {
     }
   }
 
-  if (!user || user.user_type !== 'admin') {
+  if (authLoading || !user || user.user_type !== 'admin') {
     return null
   }
 

@@ -64,10 +64,12 @@ export default function AdminCarsPage() {
     totalPages: 0
   })
   
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
+    if (authLoading) return
+
     if (!user) {
       router.push('/auth/login')
       return
@@ -79,7 +81,7 @@ export default function AdminCarsPage() {
     }
 
     fetchCars()
-  }, [user, router, pagination.page, searchQuery, brandFilter, statusFilter, approvalFilter])
+  }, [user, authLoading, router, pagination.page, searchQuery, brandFilter, statusFilter, approvalFilter])
 
   const fetchCars = async () => {
     setLoading(true)
@@ -226,7 +228,7 @@ export default function AdminCarsPage() {
     }
   }
 
-  if (!user || user.user_type !== 'admin') {
+  if (authLoading || !user || user.user_type !== 'admin') {
     return null
   }
 

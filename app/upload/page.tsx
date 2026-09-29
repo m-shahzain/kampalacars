@@ -15,6 +15,61 @@ import {
 
 const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const DRAFT_STORAGE_KEY = "kampala-cars-listing-draft";
+const DRAFT_IMAGES_DB = "kampala-cars-drafts";
+const DRAFT_IMAGES_STORE = "images";
+
+const DEFAULT_FORM_DATA = {
+  brand_id: "", model: "", title: "", chassis_number: "", description: "",
+  body_type: "", fuel_type: "", year: new Date().getFullYear(), price: "",
+  mileage: "", color: "", engine_size: "", transmission: "", drive_type: "", features: "",
+};
+
+type FormData = typeof DEFAULT_FORM_DATA;
+type FieldName = keyof FormData | "images";
+type FieldErrors = Partial<Record<FieldName, string>>;
+
+function openDraftDatabase(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DRAFT_IMAGES_DB, 1);
+    request.onupgradeneeded = () => request.result.createObjectStore(DRAFT_IMAGES_STORE);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+async function saveDraftImages(images: File[]) {
+  const database = await openDraftDatabase();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = database.transaction(DRAFT_IMAGES_STORE, "readwrite");
+    transaction.objectStore(DRAFT_IMAGES_STORE).put(images, "listing");
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+  database.close();
+}
+
+async function getDraftImages(): Promise<File[]> {
+  const database = await openDraftDatabase();
+  const images = await new Promise<File[]>((resolve, reject) => {
+    const request = database.transaction(DRAFT_IMAGES_STORE).objectStore(DRAFT_IMAGES_STORE).get("listing");
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+  database.close();
+  return images;
+}
+
+async function clearDraftImages() {
+  const database = await openDraftDatabase();
+  await new Promise<void>((resolve, reject) => {
+    const transaction = database.transaction(DRAFT_IMAGES_STORE, "readwrite");
+    transaction.objectStore(DRAFT_IMAGES_STORE).delete("listing");
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => reject(transaction.error);
+  });
+  database.close();
+}
 
 async function getResponseData(response: Response) {
   const contentType = response.headers.get("content-type") || "";
@@ -29,37 +84,53 @@ async function getResponseData(response: Response) {
 
 export default function UploadPage() {
   const [brands, setBrands] = useState<CarBrand[]>([]);
-  const [formData, setFormData] = useState({
-    brand_id: "",
-    model: "",
-    title: "",
-    chassis_number: "",
-    description: "",
-    body_type: "",
-    fuel_type: "",
-    year: new Date().getFullYear(),
-    price: "",
-    mileage: "",
-    color: "",
-    engine_size: "",
-    transmission: "",
-    drive_type: "",
-    features: "",
-  });
+  const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
 
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [draftRestored, setDraftRestored] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+
+  // Drafts are intentionally stored on this device only; nothing is sent until List Car succeeds.
+  useEffect(() => {
+    try {
+      const savedDraft = localStorage.getItem(DRAFT_STORAGE_KEY);
+      if (savedDraft) setFormData({ ...DEFAULT_FORM_DATA, ...JSON.parse(savedDraft) });
+    } catch {
+      // A malformed or unavailable local draft should never prevent listing a car.
+    }
+
+    getDraftImages()
+      .then((images) => {
+        setImageFiles(images);
+        setImagePreviews(images.map((image) => URL.createObjectURL(image)));
+      })
+      .catch(() => undefined)
+      .finally(() => setDraftRestored(true));
+  }, []);
+
+  useEffect(() => {
+    if (!draftRestored) return;
+    localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(formData));
+  }, [formData, draftRestored]);
+
+  useEffect(() => {
+    if (!draftRestored) return;
+    saveDraftImages(imageFiles).catch(() => undefined);
+  }, [imageFiles, draftRestored]);
 
   // Any logged-in normal user can sell a car.
   // Only admins are redirected to the admin panel.
   useEffect(() => {
+    if (authLoading) return;
+
     if (!user) {
       router.push("/auth/login");
     } else if (user.user_type === "admin") {
@@ -67,7 +138,7 @@ export default function UploadPage() {
     } else {
       fetchBrands();
     }
-  }, [user, router]);
+  }, [user, authLoading, router]);
 
   const fetchBrands = async () => {
     try {
@@ -90,17 +161,16 @@ export default function UploadPage() {
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const field = e.target.name as keyof FormData;
+    setFormData({ ...formData, [field]: e.target.value });
+    setFieldErrors((current) => ({ ...current, [field]: undefined }));
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
 
     if (files.length + imageFiles.length > 10) {
-      setError("Maximum 10 images allowed");
+      setFieldErrors((current) => ({ ...current, images: "You can add up to 10 photos." }));
       return;
     }
 
@@ -111,16 +181,16 @@ export default function UploadPage() {
     );
 
     if (invalidFile) {
-      setError(
+      setFieldErrors((current) => ({ ...current, images:
         !ALLOWED_IMAGE_TYPES.includes(invalidFile.type)
           ? "Images must be JPG, PNG, or WebP files"
           : "Each image must be 4 MB or smaller"
-      );
+      }));
       e.target.value = "";
       return;
     }
 
-    setError("");
+    setFieldErrors((current) => ({ ...current, images: undefined }));
 
     setImageFiles((prev) => [...prev, ...files]);
 
@@ -141,6 +211,22 @@ export default function UploadPage() {
   const removeImage = (index: number) => {
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const validateForm = (): FieldErrors => {
+    const errors: FieldErrors = {};
+    const requiredFields: Array<[keyof FormData, string]> = [
+      ["chassis_number", "Enter the chassis number."], ["brand_id", "Choose a brand."],
+      ["drive_type", "Choose the drive type."], ["model", "Enter the model."],
+      ["title", "Enter a listing title."], ["body_type", "Choose the body type."],
+      ["fuel_type", "Choose the fuel type."], ["transmission", "Choose the transmission."],
+      ["price", "Enter a valid price."], ["description", "Add a description of the car."],
+    ];
+    requiredFields.forEach(([field, message]) => { if (!String(formData[field]).trim()) errors[field] = message; });
+    if (Number(formData.price) <= 0) errors.price = "Enter a price greater than zero.";
+    if (formData.mileage && Number(formData.mileage) < 0) errors.mileage = "Mileage cannot be negative.";
+    if (!imageFiles.length) errors.images = "Add at least one photo of the car.";
+    return errors;
   };
 
   const uploadImages = async (): Promise<string[]> => {
@@ -183,6 +269,10 @@ export default function UploadPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const validationErrors = validateForm();
+    setFieldErrors(validationErrors);
+    if (Object.keys(validationErrors).length) return;
 
     if (!user) {
       setError("You must be logged in to list a car");
@@ -234,23 +324,26 @@ export default function UploadPage() {
       const data = await getResponseData(response);
 
       if (response.ok) {
+        localStorage.removeItem(DRAFT_STORAGE_KEY);
+        await clearDraftImages().catch(() => undefined);
         setSuccess(true);
 
         setTimeout(() => {
           router.push("/dashboard");
         }, 2000);
       } else {
-        setError(data.error || "Failed to list car");
+        const message = String(data.error || "").toLowerCase();
+        if (message.includes("chassis")) setFieldErrors({ chassis_number: "This chassis number is already in use." });
+        else setError("We could not save your listing. Your draft has been kept—please try again.");
       }
     } catch (err: any) {
-      console.error("Error listing car:", err);
-      setError(err.message || "Something went wrong");
+      setError("We could not save your listing. Check your connection and try again—your draft is safe.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (!user) {
+  if (authLoading || !user) {
     return null;
   }
 
@@ -303,7 +396,9 @@ export default function UploadPage() {
 
           <form
             onSubmit={handleSubmit}
+            noValidate
             className="space-y-6 bg-white rounded-lg shadow-md p-6"
+            data-invalid-fields={Object.keys(fieldErrors).filter((field) => fieldErrors[field as FieldName]).join(" ")}
           >
             {/* Car Images */}
             <div>
@@ -340,7 +435,7 @@ export default function UploadPage() {
               )}
 
               {imageFiles.length < 10 && (
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                <div data-image-upload className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
                   <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
 
                   <p className="text-sm text-gray-500 mb-2">
@@ -359,6 +454,7 @@ export default function UploadPage() {
                   />
                 </div>
               )}
+              {fieldErrors.images && <p className="mt-1 text-sm text-red-600">{fieldErrors.images}</p>}
             </div>
 
             {/* Basic Car Information */}
@@ -697,6 +793,14 @@ export default function UploadPage() {
             </div>
 
             {/* Error */}
+            {Object.keys(fieldErrors).some((field) => fieldErrors[field as FieldName]) && (
+              <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
+                <p className="font-medium text-red-800">Please correct the highlighted fields:</p>
+                <ul className="mt-1 list-disc pl-5">
+                  {Object.entries(fieldErrors).map(([field, message]) => message && <li key={field}>{message}</li>)}
+                </ul>
+              </div>
+            )}
             {error && (
               <div className="rounded-md bg-red-50 p-4">
                 <div className="flex">
@@ -734,6 +838,23 @@ export default function UploadPage() {
               </Button>
             </div>
           </form>
+          <style jsx>{`
+            form[data-invalid-fields~="chassis_number"] #chassis_number,
+            form[data-invalid-fields~="brand_id"] #brand_id,
+            form[data-invalid-fields~="drive_type"] #drive_type,
+            form[data-invalid-fields~="model"] #model,
+            form[data-invalid-fields~="title"] #title,
+            form[data-invalid-fields~="body_type"] #body_type,
+            form[data-invalid-fields~="fuel_type"] #fuel_type,
+            form[data-invalid-fields~="transmission"] #transmission,
+            form[data-invalid-fields~="price"] #price,
+            form[data-invalid-fields~="mileage"] #mileage,
+            form[data-invalid-fields~="description"] #description {
+              border-color: #ef4444;
+              box-shadow: 0 0 0 2px #fee2e2;
+            }
+            form[data-invalid-fields~="images"] [data-image-upload] { border-color: #ef4444; }
+          `}</style>
         </div>
       </div>
     </Layout>
