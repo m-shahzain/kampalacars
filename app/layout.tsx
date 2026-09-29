@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
+import { WhatsAppChatButton } from "@/components/WhatsAppChatButton";
 
 export const metadata: Metadata = {
   title: "Kampala Cars - Buy & Sell Cars in Kampala",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body className="antialiased">
         <AuthProvider>
         {children}
+        <WhatsAppChatButton />
         </AuthProvider>
       </body>
     </html>
