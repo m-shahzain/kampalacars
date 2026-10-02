@@ -95,6 +95,7 @@ export async function PUT(
       brand_id, 
       model, 
       title, 
+      chassis_number,
       description, 
       body_type, 
       fuel_type, 
@@ -105,10 +106,37 @@ export async function PUT(
       color, 
       engine_size, 
       transmission, 
+      drive_type,
       features, 
       image_urls,
       is_sold 
     } = body
+
+    // Changing only the availability status is not a content edit. Keeping the
+    // current approval lets a seller mark an already-public car as sold without
+    // making it disappear while awaiting another admin review.
+    const statusOnlyUpdate =
+      typeof is_sold === 'boolean' &&
+      Object.keys(body).every((key) => key === 'is_sold')
+
+    if (statusOnlyUpdate) {
+      const { data: car, error } = await supabase
+        .from('cars')
+        .update({ is_sold })
+        .eq('car_id', id)
+        .select(`
+          *,
+          car_brands!inner(brand_id, brand_name),
+          users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium, profile_picture_url)
+        `)
+        .single()
+
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 })
+      }
+
+      return NextResponse.json({ car })
+    }
 
     const { data: car, error } = await supabase
       .from('cars')
@@ -116,6 +144,7 @@ export async function PUT(
         brand_id,
         model,
         title,
+        chassis_number: chassis_number?.trim().toUpperCase(),
         description,
         body_type,
         fuel_type,
@@ -126,6 +155,7 @@ export async function PUT(
         color,
         engine_size,
         transmission,
+        drive_type,
         features,
         image_urls,
         is_sold: is_sold !== undefined ? is_sold : undefined,

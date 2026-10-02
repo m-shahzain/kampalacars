@@ -45,7 +45,9 @@ export async function GET(request: NextRequest) {
     if (mine) {
       query = query.eq("seller_id", sessionData.userId);
     } else {
-      query = query.eq("is_sold", false).eq("approval_status", "approved");
+      // Sold cars remain part of the public catalogue; the card identifies them
+      // with its SOLD badge so visitors can still browse completed listings.
+      query = query.eq("approval_status", "approved");
     }
 
     // Apply search filters

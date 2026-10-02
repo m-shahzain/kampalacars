@@ -14,6 +14,7 @@ export default function DashboardPage() {
   const [cars, setCars] = useState<CarWithBrand[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [markingSold, setMarkingSold] = useState<string | null>(null)
   const [editingProfile, setEditingProfile] = useState(false)
   const [savingProfile, setSavingProfile] = useState(false)
   const [profileError, setProfileError] = useState('')
@@ -106,6 +107,35 @@ export default function DashboardPage() {
       alert('Failed to delete car')
     } finally {
       setDeleting(null)
+    }
+  }
+
+  const handleMarkSold = async (carId: string) => {
+    if (!confirm('Mark this car as sold? It will remain visible in the listings with a SOLD label.')) {
+      return
+    }
+
+    setMarkingSold(carId)
+    try {
+      const response = await fetch(`/api/cars/${carId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_sold: true }),
+      })
+      const data = await response.json()
+
+      if (response.ok) {
+        setCars((currentCars) => currentCars.map((car) =>
+          car.car_id === carId ? data.car : car
+        ))
+      } else {
+        alert(data.error || 'Failed to mark the car as sold')
+      }
+    } catch (error) {
+      console.error('Error marking car as sold:', error)
+      alert('Failed to mark the car as sold')
+    } finally {
+      setMarkingSold(null)
     }
   }
 
@@ -316,6 +346,11 @@ export default function DashboardPage() {
                           }`}>
                             {car.approval_status === 'approved' ? 'Approved' : car.approval_status === 'rejected' ? 'Rejected' : 'Pending approval'}
                           </span>
+                          {car.is_sold && (
+                            <span className="bg-red-100 text-red-800 text-xs font-semibold px-2 py-1 rounded-full">
+                              Sold
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -337,6 +372,16 @@ export default function DashboardPage() {
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
                       </Button>
+                      {!car.is_sold && (
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          loading={markingSold === car.car_id}
+                          onClick={() => handleMarkSold(car.car_id)}
+                        >
+                          Mark Sold
+                        </Button>
+                      )}
                       <Button
                         variant="danger"
                         size="sm"

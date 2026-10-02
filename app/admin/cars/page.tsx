@@ -33,16 +33,19 @@ interface CarsPagination {
 interface EditCarForm {
   car_id: string
   title: string
+  chassis_number: string
   model: string
   year: number
   price: number
   body_type: string
   fuel_type: string
   transmission: string
+  drive_type: string
   mileage: number | null
   color: string
   engine_size: string
   description: string
+  image_urls: string[]
   is_sold: boolean
 }
 
@@ -53,6 +56,7 @@ export default function AdminCarsPage() {
   const [updating, setUpdating] = useState<string | null>(null)
   const [editing, setEditing] = useState<EditCarForm | null>(null)
   const [saving, setSaving] = useState(false)
+  const [uploadingPhotos, setUploadingPhotos] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [brandFilter, setBrandFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -189,18 +193,44 @@ export default function AdminCarsPage() {
     setEditing({
       car_id: car.car_id,
       title: car.title,
+      chassis_number: car.chassis_number || '',
       model: car.model,
       year: car.year,
       price: car.price,
       body_type: car.body_type,
       fuel_type: car.fuel_type,
       transmission: car.transmission,
+      drive_type: car.drive_type || '2wd',
       mileage: car.mileage ?? null,
       color: car.color || '',
       engine_size: car.engine_size || '',
       description: car.description || '',
+      image_urls: car.image_urls || [],
       is_sold: car.is_sold,
     })
+  }
+
+  const handleAdminPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || [])
+    if (!files.length || !editing) return
+
+    setUploadingPhotos(true)
+    try {
+      const urls = await Promise.all(files.map(async (file) => {
+        const formData = new FormData()
+        formData.append('file', file)
+        const response = await fetch('/api/upload', { method: 'POST', body: formData })
+        const data = await response.json()
+        if (!response.ok) throw new Error(data.error || 'Unable to upload image')
+        return data.url as string
+      }))
+      setEditing((current) => current ? { ...current, image_urls: [...current.image_urls, ...urls] } : current)
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to upload images')
+    } finally {
+      setUploadingPhotos(false)
+      event.target.value = ''
+    }
   }
 
   const handleEditCar = async () => {
@@ -535,6 +565,15 @@ export default function AdminCarsPage() {
                   />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Chassis Number</label>
+                  <input
+                    type="text"
+                    value={editing.chassis_number}
+                    onChange={(e) => setEditing({ ...editing, chassis_number: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Model</label>
                   <input
                     type="text"
@@ -621,6 +660,17 @@ export default function AdminCarsPage() {
                   </select>
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Drive Type</label>
+                  <select
+                    value={editing.drive_type}
+                    onChange={(e) => setEditing({ ...editing, drive_type: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="2wd">2WD</option>
+                    <option value="4wd">4WD</option>
+                  </select>
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
                   <input
                     type="text"
@@ -657,6 +707,19 @@ export default function AdminCarsPage() {
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Photos</label>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {editing.image_urls.map((url, index) => (
+                      <div key={`${url}-${index}`} className="relative h-20 w-28 overflow-hidden rounded border border-gray-200">
+                        <img src={url} alt={`Car photo ${index + 1}`} className="h-full w-full object-cover" />
+                        <button type="button" onClick={() => setEditing({ ...editing, image_urls: editing.image_urls.filter((_, i) => i !== index) })} className="absolute right-1 top-1 rounded bg-red-600 px-1.5 py-0.5 text-xs text-white">Remove</button>
+                      </div>
+                    ))}
+                  </div>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleAdminPhotoUpload} disabled={uploadingPhotos} className="block text-sm" />
+                  <p className="mt-1 text-xs text-gray-500">Upload photos to add them, or remove an existing photo. Each file must be 4 MB or smaller.</p>
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">

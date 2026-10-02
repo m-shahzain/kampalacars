@@ -15,10 +15,6 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionData = JSON.parse(sessionCookie.value)
-    if (sessionData.userType === 'admin') {
-      return NextResponse.json({ error: 'Admins cannot upload marketplace car images' }, { status: 403 })
-    }
-
     const supabase = await createClient()
 
     const formData = await request.formData()

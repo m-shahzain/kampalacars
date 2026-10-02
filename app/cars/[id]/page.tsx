@@ -151,6 +151,11 @@ export default function CarDetailsPage() {
                   fallbackToOriginalCarImage(event, car.image_urls?.[activeImage])
                 }
               />
+              {car.is_sold && (
+                <div className="absolute top-3 left-3 rounded bg-red-600 px-3 py-1.5 text-sm font-semibold text-white">
+                  SOLD
+                </div>
+              )}
               {car.image_urls?.length > 1 && (
                 <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
                   {activeImage + 1} / {car.image_urls.length}
