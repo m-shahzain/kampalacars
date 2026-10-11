@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Layout } from '@/components/Layout'
 import { CarCard } from '@/components/CarCard'
@@ -10,8 +10,6 @@ import {
   Search,
   SlidersHorizontal,
   X,
-  ChevronLeft,
-  ChevronRight,
   Loader2,
   Car as CarIcon,
 } from 'lucide-react'
@@ -24,10 +22,12 @@ function CarsContent() {
   const [cars, setCars] = useState<CarWithBrand[]>([])
   const [brands, setBrands] = useState<CarBrand[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const [hasMore, setHasMore] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
 
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
@@ -48,9 +48,9 @@ function CarsContent() {
       .catch(() => {})
   }, [])
 
-  const fetchCars = useCallback(async () => {
-    setLoading(true)
-    const params = new URLSearchParams({ page: page.toString(), limit: '12' })
+  const fetchCars = useCallback(async (nextPage: number, append = false) => {
+    append ? setLoadingMore(true) : setLoading(true)
+    const params = new URLSearchParams({ page: nextPage.toString(), limit: '12' })
 
     Object.entries(filters).forEach(([k, v]) => {
       if (v) params.set(k, v)
@@ -60,20 +60,31 @@ function CarsContent() {
       const res = await fetch(`/api/cars?${params}`)
       const data = await res.json()
       if (res.ok) {
-        setCars(data.cars)
+        setCars((currentCars) => append ? [...currentCars, ...data.cars] : data.cars)
         setTotal(data.pagination.total)
         setHasMore(data.pagination.hasMore)
+        setPage(nextPage)
       }
     } catch {
       console.error('Error fetching cars')
     } finally {
-      setLoading(false)
+      append ? setLoadingMore(false) : setLoading(false)
     }
-  }, [page, filters])
+  }, [filters])
 
   useEffect(() => {
-    fetchCars()
+    fetchCars(1)
   }, [fetchCars])
+
+  useEffect(() => {
+    const target = loadMoreRef.current
+    if (!target || !hasMore || loading || loadingMore) return
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) fetchCars(page + 1, true)
+    }, { rootMargin: '400px' })
+    observer.observe(target)
+    return () => observer.disconnect()
+  }, [fetchCars, hasMore, loading, loadingMore, page])
 
   const applyFilters = () => {
     setPage(1)
@@ -265,16 +276,9 @@ function CarsContent() {
               ))}
             </div>
 
-            <div className="flex justify-center items-center gap-3 py-4">
-              <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
-                <ChevronLeft className="h-4 w-4 mr-1" /> Previous
-              </Button>
-              <span className="text-sm text-gray-600 px-3 py-1 bg-gray-50 border border-gray-200 rounded-lg">
-                Page {page}
-              </span>
-              <Button variant="outline" size="sm" disabled={!hasMore} onClick={() => setPage(p => p + 1)}>
-                Next <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
+            <div ref={loadMoreRef} className="flex justify-center py-6" aria-live="polite">
+              {loadingMore && <><Loader2 className="mr-2 h-5 w-5 animate-spin text-blue-600" /><span className="text-sm text-gray-500">Loading more cars...</span></>}
+              {!hasMore && <span className="text-sm text-gray-500">You have reached the end of the listings.</span>}
             </div>
           </>
         ) : (
