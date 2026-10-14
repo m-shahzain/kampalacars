@@ -15,6 +15,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
   const [markingSold, setMarkingSold] = useState<string | null>(null)
+  const [totalViews, setTotalViews] = useState(0)
+  const [viewsByCar, setViewsByCar] = useState<Record<string, number>>({})
   const [editingProfile, setEditingProfile] = useState(false)
   const [savingProfile, setSavingProfile] = useState(false)
   const [profileError, setProfileError] = useState('')
@@ -73,11 +75,19 @@ export default function DashboardPage() {
 
   const fetchUserCars = async () => {
     try {
-      const response = await fetch('/api/cars?mine=true')
+      const [response, statsResponse] = await Promise.all([
+        fetch('/api/cars?mine=true'),
+        fetch('/api/dashboard/listing-stats'),
+      ])
       const data = await response.json()
       
       if (response.ok) {
         setCars(data.cars)
+      }
+      if (statsResponse.ok) {
+        const stats = await statsResponse.json()
+        setTotalViews(stats.totalViews)
+        setViewsByCar(stats.viewsByCar)
       }
     } catch (error) {
       console.error('Error fetching cars:', error)
@@ -184,7 +194,7 @@ export default function DashboardPage() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Views</p>
-                <p className="text-2xl font-bold text-gray-900">-</p>
+                <p className="text-2xl font-bold text-gray-900">{totalViews}</p>
               </div>
             </div>
           </div>
@@ -338,6 +348,9 @@ export default function DashboardPage() {
                           </span>
                           <span className="text-sm text-gray-500">
                             Listed {formatDate(car.created_at)}
+                          </span>
+                          <span className="inline-flex items-center text-sm text-gray-500">
+                            <Eye className="mr-1 h-4 w-4" /> {viewsByCar[car.car_id] ?? 0} views
                           </span>
                           <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
                             car.approval_status === 'approved' ? 'bg-green-100 text-green-800' :

@@ -26,6 +26,7 @@ export default function CarDetailsPage() {
   const [activeImage, setActiveImage] = useState(0);
   const [sellerImageError, setSellerImageError] = useState(false);
   const [showContactForm, setShowContactForm] = useState(false);
+  const [liking, setLiking] = useState(false);
   const [contactForm, setContactForm] = useState({
     name: "",
     email: "",
@@ -48,6 +49,7 @@ export default function CarDetailsPage() {
 
       if (response.ok) {
         setCar(data.car);
+        void fetch(`/api/cars/${carId}/view`, { method: 'POST' });
       } else {
         console.error("Car not found");
       }
@@ -55,6 +57,26 @@ export default function CarDetailsPage() {
       console.error("Error fetching car:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLike = async () => {
+    if (!car || liking) return;
+    setLiking(true);
+    try {
+      const response = await fetch(`/api/cars/${carId}/like`, { method: 'POST' });
+      const data = await response.json();
+      if (response.ok) {
+        setCar({ ...car, liked_by_current_user: data.liked, likes_count: data.likes_count });
+      } else if (response.status === 401) {
+        window.location.href = '/auth/login';
+      } else {
+        alert(data.error || 'Unable to update like');
+      }
+    } catch {
+      alert('Unable to update like');
+    } finally {
+      setLiking(false);
     }
   };
 
@@ -198,9 +220,9 @@ export default function CarDetailsPage() {
                     <Share2 className="h-4 w-4 mr-2" />
                     Share
                   </Button>
-                  <Button variant="outline" size="sm">
-                    <Heart className="h-4 w-4 mr-2" />
-                    Save
+                  <Button variant="outline" size="sm" onClick={handleLike} loading={liking}>
+                    <Heart className={`h-4 w-4 mr-2 ${car.liked_by_current_user ? 'fill-red-500 text-red-500' : ''}`} />
+                    {car.likes_count ?? 0}
                   </Button>
                 </div>
               </div>

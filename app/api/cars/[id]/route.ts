@@ -52,7 +52,27 @@ export async function GET(
       ? { ...car, users: { user_id: car.users.user_id, fullname: car.users.fullname, is_premium: false, profile_picture_url: car.users.profile_picture_url } }
       : car
 
-    return NextResponse.json({ car: { ...safeCar, contact } })
+    const { count: likesCount } = await supabase
+      .from('car_likes')
+      .select('*', { count: 'exact', head: true })
+      .eq('car_id', id)
+    const { data: currentUserLike } = sessionData?.userId
+      ? await supabase
+          .from('car_likes')
+          .select('car_id')
+          .eq('car_id', id)
+          .eq('user_id', sessionData.userId)
+          .maybeSingle()
+      : { data: null }
+
+    return NextResponse.json({
+      car: {
+        ...safeCar,
+        contact,
+        likes_count: likesCount ?? 0,
+        liked_by_current_user: Boolean(currentUserLike),
+      },
+    })
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

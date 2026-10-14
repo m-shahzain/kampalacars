@@ -47,6 +47,8 @@ export type CarWithBrand = Car & {
   car_brands: CarBrand
   users: Pick<User, 'user_id' | 'fullname' | 'email' | 'phone' | 'is_premium' | 'profile_picture_url'>
   contact: Pick<User, 'fullname' | 'email' | 'phone'> & { is_seller: boolean }
+  likes_count?: number
+  liked_by_current_user?: boolean
 }
 
 export type CarWithDetails = Car & {
