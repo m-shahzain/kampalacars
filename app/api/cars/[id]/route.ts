@@ -56,12 +56,18 @@ export async function GET(
       .from('car_likes')
       .select('*', { count: 'exact', head: true })
       .eq('car_id', id)
-    const { data: currentUserLike } = sessionData?.userId
+    const visitorId = cookieStore.get('visitor_id')?.value
+    const liker = sessionData?.userId
+      ? { column: 'user_id', value: sessionData.userId as string }
+      : visitorId
+        ? { column: 'visitor_id', value: visitorId }
+        : null
+    const { data: currentUserLike } = liker
       ? await supabase
           .from('car_likes')
           .select('car_id')
           .eq('car_id', id)
-          .eq('user_id', sessionData.userId)
+          .eq(liker.column, liker.value)
           .maybeSingle()
       : { data: null }
 

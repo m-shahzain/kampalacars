@@ -68,8 +68,6 @@ export default function CarDetailsPage() {
       const data = await response.json();
       if (response.ok) {
         setCar({ ...car, liked_by_current_user: data.liked, likes_count: data.likes_count });
-      } else if (response.status === 401) {
-        window.location.href = '/auth/login';
       } else {
         alert(data.error || 'Unable to update like');
       }
