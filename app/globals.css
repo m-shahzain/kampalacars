@@ -2,13 +2,35 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #1f2937;
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
-  --secondary: #64748b;
-  --accent: #059669;
-  --border: #e5e7eb;
-  --muted: #f8fafc;
+  --foreground: #1c1917;
+}
+
+/* Brand palette, taken from the logo: black, gold and warm grays. */
+@theme {
+  --color-brand: #111111;
+  --color-brand-hover: #333333;
+
+  --color-gold-50: #fefce8;
+  --color-gold-100: #fef9c3;
+  --color-gold-200: #fde68a;
+  --color-gold-400: #facc15;
+  --color-gold-500: #eab308;
+  --color-gold-600: #ca8a04;
+  --color-gold-700: #a16207;
+  --color-gold-800: #854d0e;
+
+  /* Warm "stone" grays replace Tailwind's cool grays everywhere. */
+  --color-gray-50: #fafaf9;
+  --color-gray-100: #f5f5f4;
+  --color-gray-200: #e7e5e4;
+  --color-gray-300: #d6d3d1;
+  --color-gray-400: #a8a29e;
+  --color-gray-500: #78716c;
+  --color-gray-600: #57534e;
+  --color-gray-700: #44403c;
+  --color-gray-800: #292524;
+  --color-gray-900: #1c1917;
+  --color-gray-950: #0c0a09;
 }
 
 @theme inline {
@@ -30,21 +52,21 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f5f5f4;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d6d3d1;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #a8a29e;
 }
 
 /* Better focus styles */
 *:focus {
-  outline: 2px solid #2563eb;
+  outline: 2px solid #a16207;
   outline-offset: 2px;
 }
 
@@ -77,7 +99,7 @@ body {
   height: 20px;
   border-radius: 9999px;
   background: #ffffff;
-  border: 2px solid #2563eb;
+  border: 2px solid #111111;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
   cursor: grab;
 }
@@ -88,21 +110,21 @@ body {
   height: 16px;
   border-radius: 9999px;
   background: #ffffff;
-  border: 2px solid #2563eb;
+  border: 2px solid #111111;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
   cursor: grab;
 }
 
 .range-thumb:focus-visible::-webkit-slider-thumb {
-  box-shadow: 0 0 0 4px #bfdbfe;
+  box-shadow: 0 0 0 4px #fde68a;
 }
 
 .range-thumb:focus-visible::-moz-range-thumb {
-  box-shadow: 0 0 0 4px #bfdbfe;
+  box-shadow: 0 0 0 4px #fde68a;
 }
 
 /* Text selection */
 ::selection {
-  background: #dbeafe;
-  color: #1e40af;
+  background: #fef3c7;
+  color: #1c1917;
 }

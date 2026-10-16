@@ -58,7 +58,7 @@ export default function LoginPage() {
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-600 focus:border-transparent"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -77,7 +77,7 @@ export default function LoginPage() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="block w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg placeholder-gray-400 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-600 focus:border-transparent"
                     placeholder="Enter your password"
                   />
                 </div>
@@ -90,7 +90,7 @@ export default function LoginPage() {
                 </div>
               )}
 
-              <Button type="submit" loading={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white" size="md">
+              <Button type="submit" loading={loading} className="w-full bg-brand hover:bg-brand-hover text-white" size="md">
                 Sign in
               </Button>
             </form>
@@ -98,7 +98,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-gray-500 mt-4">
             Don&apos;t have an account?{' '}
-            <Link href="/auth/register" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/auth/register" className="font-medium text-gold-700 hover:text-gold-800">
               Sign up
             </Link>
           </p>

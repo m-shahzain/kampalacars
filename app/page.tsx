@@ -91,19 +91,19 @@ function HomeContent() {
           />
           <p className="mt-5 text-sm text-gray-500">
             Want to sell?{' '}
-            <Link href="/upload" className="font-medium text-blue-600 hover:underline">
+            <Link href="/upload" className="font-medium text-gold-700 hover:underline">
               List your car
             </Link>
           </p>
         </div>
 
         {hasFilters && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between gap-3">
+          <div className="mb-6 p-4 bg-gold-50 border border-gold-200 rounded-lg flex items-center justify-between gap-3">
             <h2 className="text-lg font-semibold text-gray-900">
               {filters.search ? <>Results for &ldquo;{filters.search}&rdquo;</> : 'Filtered results'}
               <span className="ml-2 text-sm font-normal text-gray-500">{total} found</span>
             </h2>
-            <button onClick={() => setFilters(EMPTY_SEARCH_VALUES)} className="text-sm text-blue-700 hover:underline shrink-0">
+            <button onClick={() => setFilters(EMPTY_SEARCH_VALUES)} className="text-sm text-gold-700 hover:underline shrink-0">
               Clear filters
             </button>
           </div>
@@ -113,7 +113,7 @@ function HomeContent() {
         {loading && cars.length === 0 ? (
           <div className="flex justify-center items-center py-16">
             <div className="text-center">
-              <Loader2 className="h-6 w-6 animate-spin text-blue-600 mx-auto mb-3" />
+              <Loader2 className="h-6 w-6 animate-spin text-gold-700 mx-auto mb-3" />
               <span className="text-sm text-gray-500">Loading cars...</span>
             </div>
           </div>
@@ -126,7 +126,7 @@ function HomeContent() {
             </div>
 
             <div ref={loadMoreRef} className="flex justify-center py-6" aria-live="polite">
-              {loadingMore && <><Loader2 className="mr-2 h-5 w-5 animate-spin text-blue-600" /><span className="text-sm text-gray-500">Loading more cars...</span></>}
+              {loadingMore && <><Loader2 className="mr-2 h-5 w-5 animate-spin text-gold-700" /><span className="text-sm text-gray-500">Loading more cars...</span></>}
               {!hasMore && <span className="text-sm text-gray-500">You have reached the end of the listings.</span>}
             </div>
           </>
@@ -142,7 +142,7 @@ function HomeContent() {
               </p>
               {user?.user_type !== 'buyer' && (
                 <Link href="/upload">
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button size="sm" className="bg-brand hover:bg-brand-hover text-white">
                     Sell Your Car
                   </Button>
                 </Link>
@@ -161,7 +161,7 @@ export default function Home() {
       <Layout>
         <div className="container mx-auto px-4 py-8">
           <div className="flex justify-center items-center py-16">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-gold-700" />
             <span className="ml-2 text-gray-600">Loading...</span>
           </div>
         </div>

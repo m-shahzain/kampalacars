@@ -182,8 +182,8 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-md">
-                <CarIcon className="h-6 w-6 text-blue-600" />
+              <div className="p-2 bg-gold-100 rounded-md">
+                <CarIcon className="h-6 w-6 text-gold-700" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Active Listings</p>
@@ -194,8 +194,8 @@ export default function DashboardPage() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-md">
-                <Eye className="h-6 w-6 text-green-600" />
+              <div className="p-2 bg-gold-50 rounded-md">
+                <Eye className="h-6 w-6 text-gold-700" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Views</p>
@@ -249,11 +249,11 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 <div>
                   <label htmlFor="profileFullName" className="mb-1 block text-sm font-medium text-gray-700">Name/Company</label>
-                  <input id="profileFullName" required value={profileForm.full_name} onChange={(event) => setProfileForm({ ...profileForm, full_name: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input id="profileFullName" required value={profileForm.full_name} onChange={(event) => setProfileForm({ ...profileForm, full_name: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-600" />
                 </div>
                 <div>
                   <label htmlFor="profilePhone" className="mb-1 block text-sm font-medium text-gray-700">Phone</label>
-                  <input id="profilePhone" required type="tel" value={profileForm.phone} onChange={(event) => setProfileForm({ ...profileForm, phone: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  <input id="profilePhone" required type="tel" value={profileForm.phone} onChange={(event) => setProfileForm({ ...profileForm, phone: event.target.value })} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-600" />
                 </div>
               </div>
 
@@ -323,7 +323,7 @@ export default function DashboardPage() {
 
           {loading ? (
             <div className="p-6 text-center">
-              <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 rounded-full mx-auto"></div>
+              <div className="animate-spin h-8 w-8 border-b-2 border-brand rounded-full mx-auto"></div>
               <p className="text-gray-600 mt-2">Loading your listings...</p>
             </div>
           ) : cars.length > 0 ? (
@@ -348,7 +348,7 @@ export default function DashboardPage() {
                         </h3>
                         <p className="text-sm text-gray-600 line-clamp-1">{car.description}</p>
                         <div className="flex items-center space-x-4 mt-1">
-                          <span className="text-lg font-bold text-green-600">
+                          <span className="text-lg font-bold text-gray-900">
                             {formatPrice(car.price)}
                           </span>
                           <span className="text-sm text-gray-500">

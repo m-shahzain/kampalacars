@@ -290,7 +290,7 @@ export default function AdminCarsPage() {
               </Link>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <Car className="h-8 w-8 text-blue-600 mr-3" />
+              <Car className="h-8 w-8 text-gold-700 mr-3" />
               Car Management
             </h1>
             <p className="text-gray-600 mt-1">Manage all car listings</p>
@@ -308,7 +308,7 @@ export default function AdminCarsPage() {
                   placeholder="Search cars by title, model, or description..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
@@ -318,7 +318,7 @@ export default function AdminCarsPage() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
             >
               <option value="">All Status</option>
               <option value="false">Available</option>
@@ -327,7 +327,7 @@ export default function AdminCarsPage() {
             <select
               value={approvalFilter}
               onChange={(e) => setApprovalFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
             >
               <option value="">All approvals</option>
               <option value="pending">Pending approval</option>
@@ -354,7 +354,7 @@ export default function AdminCarsPage() {
 
           {loading ? (
             <div className="p-6 text-center">
-              <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 rounded-full mx-auto"></div>
+              <div className="animate-spin h-8 w-8 border-b-2 border-brand rounded-full mx-auto"></div>
               <p className="text-gray-600 mt-2">Loading cars...</p>
             </div>
           ) : cars.length > 0 ? (
@@ -429,7 +429,7 @@ export default function AdminCarsPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-semibold text-green-600">
+                          <div className="text-sm font-semibold text-gray-900">
                             {formatPrice(car.price)}
                           </div>
                         </td>
@@ -573,7 +573,7 @@ export default function AdminCarsPage() {
                     type="text"
                     value={editing.title}
                     onChange={(e) => setEditing({ ...editing, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                     required
                   />
                 </div>
@@ -583,7 +583,7 @@ export default function AdminCarsPage() {
                     type="text"
                     value={editing.chassis_number}
                     onChange={(e) => setEditing({ ...editing, chassis_number: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   />
                 </div>
                 <div>
@@ -592,7 +592,7 @@ export default function AdminCarsPage() {
                     type="text"
                     value={editing.model}
                     onChange={(e) => setEditing({ ...editing, model: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                     required
                   />
                 </div>
@@ -602,7 +602,7 @@ export default function AdminCarsPage() {
                     type="number"
                     value={editing.year}
                     onChange={(e) => setEditing({ ...editing, year: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                     required
                   />
                 </div>
@@ -613,7 +613,7 @@ export default function AdminCarsPage() {
                     step="0.01"
                     value={editing.price}
                     onChange={(e) => setEditing({ ...editing, price: parseFloat(e.target.value) })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                     required
                   />
                 </div>
@@ -623,7 +623,7 @@ export default function AdminCarsPage() {
                     type="number"
                     value={editing.mileage ?? ''}
                     onChange={(e) => setEditing({ ...editing, mileage: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   />
                 </div>
                 <div>
@@ -631,7 +631,7 @@ export default function AdminCarsPage() {
                   <select
                     value={editing.body_type}
                     onChange={(e) => setEditing({ ...editing, body_type: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   >
                     <option value="sedan">Sedan</option>
                     <option value="hatchback">Hatchback</option>
@@ -649,7 +649,7 @@ export default function AdminCarsPage() {
                   <select
                     value={editing.fuel_type}
                     onChange={(e) => setEditing({ ...editing, fuel_type: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   >
                     <option value="gasoline">Gasoline</option>
                     <option value="diesel">Diesel</option>
@@ -664,7 +664,7 @@ export default function AdminCarsPage() {
                   <select
                     value={editing.transmission}
                     onChange={(e) => setEditing({ ...editing, transmission: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   >
                     <option value="automatic">Automatic</option>
                     <option value="manual">Manual</option>
@@ -677,7 +677,7 @@ export default function AdminCarsPage() {
                   <select
                     value={editing.drive_type}
                     onChange={(e) => setEditing({ ...editing, drive_type: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   >
                     <option value="2wd">2WD</option>
                     <option value="4wd">4WD</option>
@@ -689,7 +689,7 @@ export default function AdminCarsPage() {
                     type="text"
                     value={editing.color}
                     onChange={(e) => setEditing({ ...editing, color: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   />
                 </div>
                 <div>
@@ -698,7 +698,7 @@ export default function AdminCarsPage() {
                     type="text"
                     value={editing.engine_size}
                     onChange={(e) => setEditing({ ...editing, engine_size: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   />
                 </div>
                 <div>
@@ -706,7 +706,7 @@ export default function AdminCarsPage() {
                   <select
                     value={editing.is_sold ? 'sold' : 'available'}
                     onChange={(e) => setEditing({ ...editing, is_sold: e.target.value === 'sold' })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   >
                     <option value="available">Available</option>
                     <option value="sold">Sold</option>
@@ -718,7 +718,7 @@ export default function AdminCarsPage() {
                     value={editing.description}
                     onChange={(e) => setEditing({ ...editing, description: e.target.value })}
                     rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   />
                 </div>
                 <div className="md:col-span-2">

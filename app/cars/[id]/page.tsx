@@ -190,7 +190,7 @@ export default function CarDetailsPage() {
                     onClick={() => setActiveImage(i)}
                     className={`relative w-16 h-12 rounded-md overflow-hidden shrink-0 border-2 transition-all ${
                       i === activeImage
-                        ? "border-blue-600"
+                        ? "border-brand"
                         : "border-transparent opacity-70 hover:opacity-100"
                     }`}
                   >
@@ -226,26 +226,26 @@ export default function CarDetailsPage() {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
-                  <Calendar className="h-5 w-5 mx-auto text-blue-600 mb-1" />
+                  <Calendar className="h-5 w-5 mx-auto text-gold-700 mb-1" />
                   <p className="text-xs text-gray-500">Year</p>
                   <p className="text-sm font-semibold">{car.year}</p>
                 </div>
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
-                  <span className="block h-5 mb-1 text-sm font-bold leading-5 text-green-600" aria-hidden="true">USh</span>
+                  <span className="block h-5 mb-1 text-sm font-bold leading-5 text-gold-700" aria-hidden="true">USh</span>
                   <p className="text-xs text-gray-500">Price</p>
-                  <p className="text-sm font-semibold text-green-600">
+                  <p className="text-sm font-semibold text-gray-900">
                     {formatPrice(car.price)}
                   </p>
                 </div>
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
-                  <Calendar className="h-5 w-5 mx-auto text-purple-600 mb-1" />
+                  <Calendar className="h-5 w-5 mx-auto text-gold-700 mb-1" />
                   <p className="text-xs text-gray-500">Listed</p>
                   <p className="text-sm font-semibold">
                     {formatDate(car.created_at)}
                   </p>
                 </div>
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
-                  <User className="h-5 w-5 mx-auto text-orange-600 mb-1" />
+                  <User className="h-5 w-5 mx-auto text-gold-700 mb-1" />
                   <p className="text-xs text-gray-500">Seller</p>
                   <p className="text-sm font-semibold">
                     {car.contact?.fullname || "Kampala Cars"}
@@ -284,7 +284,7 @@ export default function CarDetailsPage() {
             {/* Price & Contact */}
             <div className="bg-white rounded-lg border border-gray-200 p-5 sticky top-4">
               <div className="text-center mb-4">
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-gray-900">
                   {formatPrice(car.price)}
                 </p>
               </div>
@@ -372,7 +372,7 @@ export default function CarDetailsPage() {
                       onChange={(e) =>
                         setContactForm({ ...contactForm, name: e.target.value })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                       required
                     />
                   </div>
@@ -387,7 +387,7 @@ export default function CarDetailsPage() {
                           email: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                       required
                     />
                   </div>
@@ -402,7 +402,7 @@ export default function CarDetailsPage() {
                           phone: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                     />
                   </div>
                   <div>
@@ -416,7 +416,7 @@ export default function CarDetailsPage() {
                           message: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                       required
                     />
                   </div>

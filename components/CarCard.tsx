@@ -50,7 +50,7 @@ export function CarCard({ car, priority = false }: CarCardProps) {
 
         <div className="p-4">
           <div className="flex items-start justify-between gap-2 mb-1">
-            <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition-colors">
+            <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-gold-700 transition-colors">
               {car.car_brands.brand_name} {car.model}
             </h3>
             <span className="text-xs text-gray-500 shrink-0">{car.year}</span>

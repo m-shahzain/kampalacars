@@ -171,7 +171,7 @@ export default function AdminUsersPage() {
               </Link>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <Users className="h-8 w-8 text-blue-600 mr-3" />
+              <Users className="h-8 w-8 text-gold-700 mr-3" />
               User Management
             </h1>
             <p className="text-gray-600 mt-1">Manage all user accounts</p>
@@ -189,7 +189,7 @@ export default function AdminUsersPage() {
                   placeholder="Search users by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 />
                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
               </div>
@@ -199,7 +199,7 @@ export default function AdminUsersPage() {
             <select
               value={userTypeFilter}
               onChange={(e) => setUserTypeFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
             >
               <option value="">All User Types</option>
               <option value="buyer">Buyers</option>
@@ -226,7 +226,7 @@ export default function AdminUsersPage() {
 
           {loading ? (
             <div className="p-6 text-center">
-              <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 rounded-full mx-auto"></div>
+              <div className="animate-spin h-8 w-8 border-b-2 border-brand rounded-full mx-auto"></div>
               <p className="text-gray-600 mt-2">Loading users...</p>
             </div>
           ) : users.length > 0 ? (
@@ -261,8 +261,8 @@ export default function AdminUsersPage() {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
-                              <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                                <UserIcon className="h-5 w-5 text-blue-600" />
+                              <div className="h-10 w-10 rounded-full bg-gold-100 flex items-center justify-center">
+                                <UserIcon className="h-5 w-5 text-gold-700" />
                               </div>
                             </div>
                             <div className="ml-4">
@@ -300,7 +300,7 @@ export default function AdminUsersPage() {
                               ? 'bg-red-100 text-red-800'
                               : user.user_type === 'seller'
                               ? 'bg-green-100 text-green-800'
-                              : 'bg-blue-100 text-blue-800'
+                              : 'bg-gold-100 text-gold-800'
                           }`}>
                             {user.user_type === 'admin' && <Shield className="h-3 w-3 mr-1" />}
                             {user.user_type.charAt(0).toUpperCase() + user.user_type.slice(1)}
@@ -397,7 +397,7 @@ export default function AdminUsersPage() {
                       type="text"
                       value={editing.fullname}
                       onChange={(e) => setEditing({...editing, fullname: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                       required
                     />
                   </div>
@@ -409,7 +409,7 @@ export default function AdminUsersPage() {
                       type="email"
                       value={editing.email}
                       onChange={(e) => setEditing({...editing, email: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                       required
                     />
                   </div>
@@ -421,7 +421,7 @@ export default function AdminUsersPage() {
                       type="tel"
                       value={editing.phone || ''}
                       onChange={(e) => setEditing({...editing, phone: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                     />
                   </div>
                   <div>
@@ -431,7 +431,7 @@ export default function AdminUsersPage() {
                     <select
                       value={editing.user_type}
                       onChange={(e) => setEditing({...editing, user_type: e.target.value as any})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                     >
                       <option value="buyer">Buyer</option>
                       <option value="seller">Seller</option>
@@ -443,7 +443,7 @@ export default function AdminUsersPage() {
                       type="checkbox"
                       checked={editing.is_premium}
                       onChange={(e) => setEditing({...editing, is_premium: e.target.checked})}
-                      className="h-4 w-4 rounded border-gray-300 text-blue-600"
+                      className="h-4 w-4 rounded border-gray-300 text-gold-700"
                     />
                     Premium seller approved
                   </label>

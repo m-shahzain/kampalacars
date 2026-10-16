@@ -411,7 +411,7 @@ export default function UploadPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <Car className="mx-auto h-12 w-12 text-blue-600 mb-4" />
+            <Car className="mx-auto h-12 w-12 text-gold-700 mb-4" />
 
             <h1 className="text-3xl font-bold text-gray-900">Sell Your Car</h1>
 
@@ -471,7 +471,7 @@ export default function UploadPage() {
                   </p>
 
                   {processingImages && (
-                    <p className="flex items-center justify-center text-sm text-blue-700 mb-2" aria-live="polite">
+                    <p className="flex items-center justify-center text-sm text-gold-700 mb-2" aria-live="polite">
                       <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                       Processing photos...
                     </p>
@@ -483,7 +483,7 @@ export default function UploadPage() {
                     multiple
                     disabled={processingImages}
                     onChange={handleImageChange}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-gold-50 file:text-gold-700 hover:file:bg-gold-100"
                     required={imageFiles.length === 0}
                   />
                 </div>
@@ -503,7 +503,7 @@ export default function UploadPage() {
                   required
                   value={formData.chassis_number}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   placeholder="e.g. JTMBD33V106012345"
                 />
                 <p className="mt-1 text-xs text-gray-500">Must be unique for each vehicle.</p>
@@ -523,7 +523,7 @@ export default function UploadPage() {
                   required
                   value={formData.brand_id}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 >
                   <option value="">Select a brand</option>
 
@@ -538,7 +538,7 @@ export default function UploadPage() {
               <div>
                 <label htmlFor="drive_type" className="block text-sm font-medium text-gray-700 mb-1">Drive Type *</label>
                 <select id="drive_type" name="drive_type" required value={formData.drive_type} onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600">
                   <option value="">Select drive type</option>
                   <option value="2wd">2WD</option>
                   <option value="4wd">4WD</option>
@@ -560,7 +560,7 @@ export default function UploadPage() {
                   required
                   value={formData.model}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   placeholder="e.g., Camry"
                 />
               </div>
@@ -582,7 +582,7 @@ export default function UploadPage() {
                 required
                 value={formData.title}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 placeholder="e.g., 2020 Toyota Camry - Excellent Condition"
               />
             </div>
@@ -603,7 +603,7 @@ export default function UploadPage() {
                   required
                   value={formData.body_type}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 >
                   <option value="">Select body type</option>
                   <option value="sedan">Sedan</option>
@@ -632,7 +632,7 @@ export default function UploadPage() {
                   required
                   value={formData.fuel_type}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 >
                   <option value="">Select fuel type</option>
                   <option value="gasoline">Gasoline</option>
@@ -658,7 +658,7 @@ export default function UploadPage() {
                   required
                   value={formData.transmission}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 >
                   <option value="">Select transmission</option>
                   <option value="manual">Manual</option>
@@ -682,7 +682,7 @@ export default function UploadPage() {
                   required
                   value={formData.year}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 >
                   {Array.from(
                     { length: 30 },
@@ -720,7 +720,7 @@ export default function UploadPage() {
                     required
                     value={formData.price}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                     placeholder="25000"
                   />
                 </div>
@@ -741,7 +741,7 @@ export default function UploadPage() {
                   min="0"
                   value={formData.mileage}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   placeholder="e.g., 50000"
                 />
               </div>
@@ -760,7 +760,7 @@ export default function UploadPage() {
                   name="color"
                   value={formData.color}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   placeholder="e.g., Red"
                 />
               </div>
@@ -779,7 +779,7 @@ export default function UploadPage() {
                   name="engine_size"
                   value={formData.engine_size}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   placeholder="e.g., 2.0L"
                 />
               </div>
@@ -800,7 +800,7 @@ export default function UploadPage() {
                 name="features"
                 value={formData.features}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 placeholder="e.g., Leather seats, Sunroof, Navigation system"
               />
             </div>
@@ -821,7 +821,7 @@ export default function UploadPage() {
                 required
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 placeholder="Describe your car's condition, maintenance history, and any additional details..."
               />
             </div>

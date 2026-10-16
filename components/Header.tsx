@@ -38,11 +38,11 @@ export function Header() {
                 placeholder="Search cars by brand, model..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full px-4 py-2.5 pl-10 pr-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2.5 pl-10 pr-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold-600 focus:border-transparent"
               />
               <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
             </div>
-            <Button type="submit" className="ml-3 bg-blue-600 hover:bg-blue-700">
+            <Button type="submit" className="ml-3 bg-brand hover:bg-brand-hover">
               Search
             </Button>
           </form>
@@ -71,7 +71,7 @@ export function Header() {
                       </Button>
                     </Link>
                     <Link href="/upload">
-                      <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button size="sm" className="bg-brand hover:bg-brand-hover text-white">
                         <Plus className="h-4 w-4 mr-2" />
                         Sell Car
                       </Button>
@@ -96,7 +96,7 @@ export function Header() {
                   </Button>
                 </Link>
                 <Link href="/auth/register">
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button size="sm" className="bg-brand hover:bg-brand-hover text-white">
                     Register
                   </Button>
                 </Link>
@@ -113,7 +113,7 @@ export function Header() {
               placeholder="Search cars..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2.5 pl-10 pr-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2.5 pl-10 pr-4 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gold-600 focus:border-transparent"
             />
             <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
           </div>

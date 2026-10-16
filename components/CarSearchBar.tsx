@@ -150,7 +150,7 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
           placeholder="Search make, model or keyword"
           value={draft.search}
           onChange={(event) => update({ search: event.target.value })}
-          className="w-full h-11 pl-10 pr-3 text-sm bg-transparent text-gray-900 placeholder-gray-400 rounded-xl border border-gray-200 md:border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 md:focus:ring-0"
+          className="w-full h-11 pl-10 pr-3 text-sm bg-transparent text-gray-900 placeholder-gray-400 rounded-xl border border-gray-200 md:border-0 focus:outline-none focus:ring-2 focus:ring-gold-600 md:focus:ring-0"
         />
       </div>
 
@@ -197,7 +197,7 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
             type="button"
             aria-expanded={priceOpen}
             onClick={() => setPriceOpen((open) => !open)}
-            className={cn(segmentClass, 'w-full md:w-48 pl-9 pr-8 text-sm focus:outline-none', currentPriceLabel ? 'text-blue-700 font-medium' : 'text-gray-700')}
+            className={cn(segmentClass, 'w-full md:w-48 pl-9 pr-8 text-sm focus:outline-none', currentPriceLabel ? 'text-gold-700 font-medium' : 'text-gray-700')}
           >
             <Banknote className="absolute left-3 h-4 w-4 text-gray-400" />
             <span className="truncate">{currentPriceLabel || 'Any price'}</span>
@@ -208,7 +208,7 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
             <div className="absolute z-30 mt-2 left-0 right-0 sm:left-auto sm:w-80 bg-white border border-gray-200 rounded-2xl shadow-lg p-4">
               <div className="flex items-baseline justify-between mb-4">
                 <p className="text-sm font-semibold text-gray-900">Price range</p>
-                <p className="text-xs font-medium text-blue-700">{currentPriceLabel || 'Any price'}</p>
+                <p className="text-xs font-medium text-gold-700">{currentPriceLabel || 'Any price'}</p>
               </div>
 
               {bounds ? (
@@ -216,7 +216,7 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
                   <div className="relative h-5 mb-2">
                     <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-gray-200" />
                     <div
-                      className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-blue-600"
+                      className="absolute top-1/2 -translate-y-1/2 h-1.5 rounded-full bg-gold-500"
                       style={{ left: `${percent(low)}%`, right: `${100 - percent(high)}%` }}
                     />
                     <input
@@ -258,7 +258,7 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
                   placeholder="Min"
                   value={draft.min_price}
                   onChange={(event) => update({ min_price: event.target.value })}
-                  className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold-600"
                 />
                 <span className="text-gray-300">–</span>
                 <input
@@ -269,7 +269,7 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
                   placeholder="Max"
                   value={draft.max_price}
                   onChange={(event) => update({ max_price: event.target.value })}
-                  className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full h-10 px-3 text-sm border border-gray-200 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold-600"
                 />
               </div>
 

@@ -135,7 +135,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-              <Shield className="h-8 w-8 text-blue-600 mr-3" />
+              <Shield className="h-8 w-8 text-gold-700 mr-3" />
               Admin Dashboard
             </h1>
             <p className="text-gray-600 mt-1">Manage your car marketplace</p>
@@ -160,8 +160,8 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-md">
-                <Users className="h-6 w-6 text-blue-600" />
+              <div className="p-2 bg-gold-100 rounded-md">
+                <Users className="h-6 w-6 text-gold-700" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Users</p>
@@ -173,8 +173,8 @@ export default function AdminDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-md">
-                <Car className="h-6 w-6 text-green-600" />
+              <div className="p-2 bg-gold-50 rounded-md">
+                <Car className="h-6 w-6 text-gold-700" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Total Cars</p>
@@ -199,8 +199,8 @@ export default function AdminDashboard() {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-md">
-                <Activity className="h-6 w-6 text-purple-600" />
+              <div className="p-2 bg-gold-50 rounded-md">
+                <Activity className="h-6 w-6 text-gold-700" />
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">User Types</p>
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
                   {stats.topBrands.map((brand, index) => (
                     <div key={brand.brand_name} className="flex items-center justify-between">
                       <div className="flex items-center">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-semibold text-sm mr-3">
+                        <div className="w-8 h-8 bg-gold-100 rounded-full flex items-center justify-center text-gold-700 font-semibold text-sm mr-3">
                           {index + 1}
                         </div>
                         <span className="font-medium text-gray-900">{brand.brand_name}</span>
@@ -301,7 +301,7 @@ export default function AdminDashboard() {
               <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <Users className="h-5 w-5 text-blue-600 mr-3" />
+                    <Users className="h-5 w-5 text-gold-700 mr-3" />
                     <span className="font-medium text-gray-900">Manage Users</span>
                   </div>
                   <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -314,7 +314,7 @@ export default function AdminDashboard() {
               <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <Car className="h-5 w-5 text-green-600 mr-3" />
+                    <Car className="h-5 w-5 text-gold-700 mr-3" />
                     <span className="font-medium text-gray-900">Manage Cars</span>
                   </div>
                   <ChevronRight className="h-4 w-4 text-gray-400" />
@@ -327,7 +327,7 @@ export default function AdminDashboard() {
               <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <Settings className="h-5 w-5 text-purple-600 mr-3" />
+                    <Settings className="h-5 w-5 text-gold-700 mr-3" />
                     <span className="font-medium text-gray-900">Manage Brands</span>
                   </div>
                   <ChevronRight className="h-4 w-4 text-gray-400" />

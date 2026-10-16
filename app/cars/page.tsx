@@ -119,7 +119,7 @@ function CarsContent() {
   }
   const activePriceLabel = priceLabel(filters.min_price, filters.max_price)
 
-  const selectClass = "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+  const selectClass = "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-600"
   const inputClass = selectClass
 
   return (
@@ -138,12 +138,12 @@ function CarsContent() {
           <button
             type="button"
             onClick={() => setShowFilters(!showFilters)}
-            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-700"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-gold-700"
           >
             <SlidersHorizontal className="h-4 w-4" />
             More filters
             {moreFilterCount > 0 && (
-              <span className="bg-blue-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+              <span className="bg-brand text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
                 {moreFilterCount}
               </span>
             )}
@@ -155,7 +155,7 @@ function CarsContent() {
           <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-gray-900">More filters</h3>
-              <button onClick={clearFilters} className="text-xs text-blue-600 hover:underline">
+              <button onClick={clearFilters} className="text-xs text-gold-700 hover:underline">
                 Clear all
               </button>
             </div>
@@ -213,7 +213,7 @@ function CarsContent() {
             </div>
 
             <div className="flex justify-end mt-3">
-              <Button size="sm" onClick={() => applyFilters()} className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button size="sm" onClick={() => applyFilters()} className="bg-brand hover:bg-brand-hover text-white">
                 Apply Filters
               </Button>
             </div>
@@ -225,31 +225,31 @@ function CarsContent() {
           <div className="flex flex-wrap items-center gap-2 mb-4">
             <span className="text-xs text-gray-500">{total} result{total !== 1 ? 's' : ''}</span>
             {filters.search && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold-50 text-gold-700 text-xs rounded-md">
                 &ldquo;{filters.search}&rdquo;
                 <button onClick={() => { setFilters({ ...filters, search: '' }); setPage(1) }}><X className="h-3 w-3" /></button>
               </span>
             )}
             {filters.brand_id && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold-50 text-gold-700 text-xs rounded-md">
                 {brands.find(b => b.brand_id === filters.brand_id)?.brand_name}
                 <button onClick={() => setFilters({ ...filters, brand_id: '' })}><X className="h-3 w-3" /></button>
               </span>
             )}
             {filters.seller_id && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold-50 text-gold-700 text-xs rounded-md">
                 {sellers.find(s => s.seller_id === filters.seller_id)?.fullname ?? 'Seller'}
                 <button onClick={() => setFilters({ ...filters, seller_id: '' })}><X className="h-3 w-3" /></button>
               </span>
             )}
             {activePriceLabel && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold-50 text-gold-700 text-xs rounded-md">
                 {activePriceLabel}
                 <button onClick={() => setFilters({ ...filters, min_price: '', max_price: '' })}><X className="h-3 w-3" /></button>
               </span>
             )}
             {filters.body_type && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md capitalize">
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold-50 text-gold-700 text-xs rounded-md capitalize">
                 {filters.body_type}
                 <button onClick={() => setFilters({ ...filters, body_type: '' })}><X className="h-3 w-3" /></button>
               </span>
@@ -263,7 +263,7 @@ function CarsContent() {
         {/* Results */}
         {loading && cars.length === 0 ? (
           <div className="flex justify-center items-center py-16">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-600 mr-2" />
+            <Loader2 className="h-6 w-6 animate-spin text-gold-700 mr-2" />
             <span className="text-sm text-gray-500">Loading cars...</span>
           </div>
         ) : cars.length > 0 ? (
@@ -275,7 +275,7 @@ function CarsContent() {
             </div>
 
             <div ref={loadMoreRef} className="flex justify-center py-6" aria-live="polite">
-              {loadingMore && <><Loader2 className="mr-2 h-5 w-5 animate-spin text-blue-600" /><span className="text-sm text-gray-500">Loading more cars...</span></>}
+              {loadingMore && <><Loader2 className="mr-2 h-5 w-5 animate-spin text-gold-700" /><span className="text-sm text-gray-500">Loading more cars...</span></>}
               {!hasMore && <span className="text-sm text-gray-500">You have reached the end of the listings.</span>}
             </div>
           </>
@@ -297,7 +297,7 @@ export default function CarsPage() {
     <Suspense fallback={
       <Layout>
         <div className="flex justify-center items-center py-20">
-          <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+          <Loader2 className="h-6 w-6 animate-spin text-gold-700" />
         </div>
       </Layout>
     }>

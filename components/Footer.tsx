@@ -23,9 +23,9 @@ export function Footer() {
           <div>
             <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Browse</h3>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/" className="hover:text-blue-600 transition-colors">All Cars</Link></li>
+              <li><Link href="/" className="hover:text-gold-700 transition-colors">All Cars</Link></li>
               {user && user.user_type !== 'admin' && (
-                <li><Link href="/upload" className="hover:text-blue-600 transition-colors">Sell Your Car</Link></li>
+                <li><Link href="/upload" className="hover:text-gold-700 transition-colors">Sell Your Car</Link></li>
               )}
             </ul>
           </div>
@@ -33,17 +33,17 @@ export function Footer() {
           <div>
             <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Account</h3>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/auth/login" className="hover:text-blue-600 transition-colors">Login</Link></li>
-              <li><Link href="/auth/register" className="hover:text-blue-600 transition-colors">Register</Link></li>
-              <li><Link href="/dashboard" className="hover:text-blue-600 transition-colors">Dashboard</Link></li>
+              <li><Link href="/auth/login" className="hover:text-gold-700 transition-colors">Login</Link></li>
+              <li><Link href="/auth/register" className="hover:text-gold-700 transition-colors">Register</Link></li>
+              <li><Link href="/dashboard" className="hover:text-gold-700 transition-colors">Dashboard</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-xs font-semibold text-gray-900 uppercase tracking-wider mb-3">Company</h3>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li><Link href="/about" className="hover:text-blue-600 transition-colors">About</Link></li>
-              <li><Link href="/contact" className="hover:text-blue-600 transition-colors">Contact</Link></li>
+              <li><Link href="/about" className="hover:text-gold-700 transition-colors">About</Link></li>
+              <li><Link href="/contact" className="hover:text-gold-700 transition-colors">Contact</Link></li>
             </ul>
           </div>
         </div>
