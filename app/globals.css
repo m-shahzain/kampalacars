@@ -48,6 +48,59 @@ body {
   outline-offset: 2px;
 }
 
+/* Two stacked range inputs acting as one min/max slider */
+.range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+  margin: 0;
+}
+
+.range-thumb:focus {
+  outline: none;
+}
+
+.range-thumb::-webkit-slider-runnable-track {
+  background: transparent;
+}
+
+.range-thumb::-moz-range-track {
+  background: transparent;
+}
+
+.range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  width: 20px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 2px solid #2563eb;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  cursor: grab;
+}
+
+.range-thumb::-moz-range-thumb {
+  pointer-events: auto;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 2px solid #2563eb;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.2);
+  cursor: grab;
+}
+
+.range-thumb:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px #bfdbfe;
+}
+
+.range-thumb:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 4px #bfdbfe;
+}
+
 /* Text selection */
 ::selection {
   background: #dbeafe;

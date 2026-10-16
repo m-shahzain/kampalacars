@@ -46,7 +46,7 @@ export function getCarImageSources(imageUrl?: string) {
     const base = `${url.origin}${STORAGE_PUBLIC_PATH}optimized/${variantIdFromObjectPath(objectPath)}`;
     return {
       src: `${base}-card.webp`,
-      srcSet: `${base}-thumb.webp 300w, ${base}-card.webp 800w, ${base}-full.webp 1600w`,
+      srcSet: `${base}-thumb.webp 300w, ${base}-card.webp 800w, ${imageUrl} 1600w`,
       sizes: "(max-width: 640px) 300px, (max-width: 1024px) 800px, 1600px",
     };
   } catch {

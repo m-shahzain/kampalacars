@@ -9,6 +9,7 @@ import { CarWithBrand } from '@/lib/types'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { Plus, Edit, Trash2, Eye, User, Phone, Mail, Settings, Car as CarIcon, ImagePlus, X } from 'lucide-react'
 import { fallbackToOriginalCarImage, getCarImageSources } from '@/lib/car-image'
+import { compressImage } from '@/lib/compress-image'
 
 export default function DashboardPage() {
   const [cars, setCars] = useState<CarWithBrand[]>([])
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const [profileForm, setProfileForm] = useState({ full_name: '', phone: '' })
   const [newProfilePicture, setNewProfilePicture] = useState<File | null>(null)
   const [profilePicturePreview, setProfilePicturePreview] = useState('')
+  const [processingPicture, setProcessingPicture] = useState(false)
   
   const { user, profile, loading: authLoading, updateProfile } = useAuth()
   const router = useRouter()
@@ -47,19 +49,22 @@ export default function DashboardPage() {
     setEditingProfile(true)
   }
 
-  const handleProfilePictureChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
+    event.target.value = ''
     if (!file) return
 
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-      setProfileError('Choose a JPG, PNG, or WebP image no larger than 2 MB.')
-      event.target.value = ''
-      return
-    }
-
     setProfileError('')
-    setNewProfilePicture(file)
-    setProfilePicturePreview(URL.createObjectURL(file))
+    setProcessingPicture(true)
+    try {
+      const compressed = await compressImage(file)
+      setNewProfilePicture(compressed)
+      setProfilePicturePreview(URL.createObjectURL(compressed))
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : 'Could not process the picture.')
+    } finally {
+      setProcessingPicture(false)
+    }
   }
 
   const handleProfileSave = async (event: React.FormEvent) => {
@@ -234,10 +239,10 @@ export default function DashboardPage() {
                 <div>
                   <label htmlFor="editProfilePicture" className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
                     <ImagePlus className="h-4 w-4" />
-                    {profilePicturePreview ? 'Change picture' : 'Upload picture'}
+                    {processingPicture ? 'Processing...' : profilePicturePreview ? 'Change picture' : 'Upload picture'}
                   </label>
-                  <input id="editProfilePicture" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleProfilePictureChange} className="sr-only" />
-                  <p className="mt-1 text-xs text-gray-500">JPG, PNG, or WebP; max 2 MB.</p>
+                  <input id="editProfilePicture" type="file" accept="image/jpeg,image/png,image/webp" disabled={processingPicture} onChange={handleProfilePictureChange} className="sr-only" />
+                  <p className="mt-1 text-xs text-gray-500">JPG, PNG, or WebP.</p>
                 </div>
               </div>
 
@@ -256,7 +261,7 @@ export default function DashboardPage() {
 
               <div className="mt-6 flex justify-end gap-3">
                 <Button type="button" variant="outline" onClick={() => setEditingProfile(false)}>Cancel</Button>
-                <Button type="submit" loading={savingProfile}>Save Changes</Button>
+                <Button type="submit" loading={savingProfile || processingPicture}>Save Changes</Button>
               </div>
             </form>
           </div>

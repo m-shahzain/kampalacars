@@ -4,9 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
+import { compressImage } from "@/lib/compress-image";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/Button";
-import { Car, Mail, Lock, User, Phone, MapPin, AlertCircle, CheckCircle, ImagePlus } from "lucide-react";
+import { Mail, Lock, User, Phone, MapPin, AlertCircle, CheckCircle, ImagePlus } from "lucide-react";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -23,6 +24,7 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState("");
+  const [processingPicture, setProcessingPicture] = useState(false);
 
   const { signUp } = useAuth();
   const router = useRouter();
@@ -31,19 +33,22 @@ export default function RegisterPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
 
-    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size > 2 * 1024 * 1024) {
-      setError("Choose a JPG, PNG, or WebP display picture no larger than 2 MB.");
-      e.target.value = "";
-      return;
-    }
-
     setError("");
-    setProfilePicture(file);
-    setProfilePicturePreview(URL.createObjectURL(file));
+    setProcessingPicture(true);
+    try {
+      const compressed = await compressImage(file);
+      setProfilePicture(compressed);
+      setProfilePicturePreview(URL.createObjectURL(compressed));
+    } catch (compressionError) {
+      setError(compressionError instanceof Error ? compressionError.message : "Could not process the display picture.");
+    } finally {
+      setProcessingPicture(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -110,9 +115,7 @@ export default function RegisterPage() {
       <div className="flex items-center justify-center py-16 px-4">
         <div className="w-full max-w-sm">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl mb-4">
-              <Car className="h-6 w-6 text-white" />
-            </div>
+            <img src="/logo.webp" alt="Kampala Cars logo" width={80} height={80} className="mx-auto h-20 w-20 rounded-xl mb-4" />
             <h2 className="text-xl font-bold text-gray-900">
               Create your account
             </h2>
@@ -200,11 +203,11 @@ export default function RegisterPage() {
                   )}
                   <label htmlFor="profilePicture" className="flex cursor-pointer items-center gap-2 rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50">
                     <ImagePlus className="h-4 w-4" />
-                    {profilePicture ? "Change picture" : "Upload picture"}
+                    {processingPicture ? "Processing..." : profilePicture ? "Change picture" : "Upload picture"}
                   </label>
-                  <input id="profilePicture" type="file" accept="image/jpeg,image/png,image/webp" onChange={handleProfilePictureChange} className="sr-only" />
+                  <input id="profilePicture" type="file" accept="image/jpeg,image/png,image/webp" disabled={processingPicture} onChange={handleProfilePictureChange} className="sr-only" />
                 </div>
-                <p className="mt-1 text-xs text-gray-500">Optional. This small photo appears beside cars you list. JPG, PNG, or WebP; max 2 MB.</p>
+                <p className="mt-1 text-xs text-gray-500">Optional. This small photo appears beside cars you list. JPG, PNG, or WebP.</p>
               </div>
 
               <div>
@@ -262,7 +265,7 @@ export default function RegisterPage() {
 
               <Button
                 type="submit"
-                loading={loading}
+                loading={loading || processingPicture}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                 size="md"
               >

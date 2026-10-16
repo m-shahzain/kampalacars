@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# image migration output (backups can be large and are private)
+/image-backup/
+/orphans.json

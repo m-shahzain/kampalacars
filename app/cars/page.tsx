@@ -5,9 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Layout } from '@/components/Layout'
 import { CarCard } from '@/components/CarCard'
 import { Button } from '@/components/ui/Button'
-import { CarWithBrand, CarBrand } from '@/lib/types'
+import { CarSearchBar, CarSearchValues, priceLabel, useSearchOptions } from '@/components/CarSearchBar'
+import { CarWithBrand } from '@/lib/types'
 import {
-  Search,
   SlidersHorizontal,
   X,
   Loader2,
@@ -20,7 +20,6 @@ function CarsContent() {
   const searchParams = useSearchParams()
 
   const [cars, setCars] = useState<CarWithBrand[]>([])
-  const [brands, setBrands] = useState<CarBrand[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
@@ -28,10 +27,12 @@ function CarsContent() {
   const [hasMore, setHasMore] = useState(false)
   const [showFilters, setShowFilters] = useState(false)
   const loadMoreRef = useRef<HTMLDivElement>(null)
+  const latestRequest = useRef(0)
 
   const [filters, setFilters] = useState({
     search: searchParams.get('search') || '',
     brand_id: searchParams.get('brand_id') || '',
+    seller_id: searchParams.get('seller_id') || '',
     body_type: searchParams.get('body_type') || '',
     fuel_type: searchParams.get('fuel_type') || '',
     transmission: searchParams.get('transmission') || '',
@@ -41,12 +42,8 @@ function CarsContent() {
     max_year: searchParams.get('max_year') || '',
   })
 
-  useEffect(() => {
-    fetch('/api/brands')
-      .then(r => r.json())
-      .then(d => setBrands(d.brands || []))
-      .catch(() => {})
-  }, [])
+  const searchOptions = useSearchOptions()
+  const { brands, sellers } = searchOptions
 
   const fetchCars = useCallback(async (nextPage: number, append = false) => {
     append ? setLoadingMore(true) : setLoading(true)
@@ -56,9 +53,13 @@ function CarsContent() {
       if (v) params.set(k, v)
     })
 
+    const requestId = ++latestRequest.current
+
     try {
       const res = await fetch(`/api/cars?${params}`)
       const data = await res.json()
+      // Ignore a slow response that a newer filter change has replaced.
+      if (requestId !== latestRequest.current) return
       if (res.ok) {
         setCars((currentCars) => append ? [...currentCars, ...data.cars] : data.cars)
         setTotal(data.pagination.total)
@@ -68,7 +69,7 @@ function CarsContent() {
     } catch {
       console.error('Error fetching cars')
     } finally {
-      append ? setLoadingMore(false) : setLoading(false)
+      if (requestId === latestRequest.current) append ? setLoadingMore(false) : setLoading(false)
     }
   }, [filters])
 
@@ -86,12 +87,13 @@ function CarsContent() {
     return () => observer.disconnect()
   }, [fetchCars, hasMore, loading, loadingMore, page])
 
-  const applyFilters = () => {
+  const applyFilters = (nextFilters = filters, closePanel = true) => {
+    setFilters(nextFilters)
     setPage(1)
-    setShowFilters(false)
+    if (closePanel) setShowFilters(false)
 
     const params = new URLSearchParams()
-    Object.entries(filters).forEach(([k, v]) => {
+    Object.entries(nextFilters).forEach(([k, v]) => {
       if (v) params.set(k, v)
     })
     router.replace(`/cars?${params.toString()}`, { scroll: false })
@@ -99,7 +101,7 @@ function CarsContent() {
 
   const clearFilters = () => {
     setFilters({
-      search: '', brand_id: '', body_type: '', fuel_type: '',
+      search: '', brand_id: '', seller_id: '', body_type: '', fuel_type: '',
       transmission: '', min_price: '', max_price: '', min_year: '', max_year: '',
     })
     setPage(1)
@@ -107,6 +109,15 @@ function CarsContent() {
   }
 
   const activeFilterCount = Object.values(filters).filter(v => v).length
+  const moreFilterCount = [filters.body_type, filters.fuel_type, filters.transmission, filters.min_year, filters.max_year].filter(v => v).length
+  const searchBarValues: CarSearchValues = {
+    search: filters.search,
+    brand_id: filters.brand_id,
+    seller_id: filters.seller_id,
+    min_price: filters.min_price,
+    max_price: filters.max_price,
+  }
+  const activePriceLabel = priceLabel(filters.min_price, filters.max_price)
 
   const selectClass = "w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
   const inputClass = selectClass
@@ -114,57 +125,42 @@ function CarsContent() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6">
-        {/* Search bar + filter toggle */}
-        <div className="flex items-center gap-3 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search by brand, model, or keyword..."
-              value={filters.search}
-              onChange={e => setFilters({ ...filters, search: e.target.value })}
-              onKeyDown={e => e.key === 'Enter' && applyFilters()}
-              className="w-full pl-10 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <Button size="md" onClick={applyFilters} className="bg-blue-600 hover:bg-blue-700 text-white shrink-0">
-            Search
-          </Button>
-          <Button
-            size="md"
-            variant="outline"
+        {/* Search bar */}
+        <CarSearchBar
+          options={searchOptions}
+          values={searchBarValues}
+          onSubmit={(values) => applyFilters({ ...filters, ...values }, false)}
+          live
+          className="mb-3"
+        />
+
+        <div className="flex justify-end mb-4">
+          <button
+            type="button"
             onClick={() => setShowFilters(!showFilters)}
-            className="shrink-0 relative"
+            className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-blue-700"
           >
-            <SlidersHorizontal className="h-4 w-4 mr-1.5" />
-            Filters
-            {activeFilterCount > (filters.search ? 1 : 0) && (
-              <span className="absolute -top-1.5 -right-1.5 bg-blue-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
-                {activeFilterCount - (filters.search ? 1 : 0)}
+            <SlidersHorizontal className="h-4 w-4" />
+            More filters
+            {moreFilterCount > 0 && (
+              <span className="bg-blue-600 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center">
+                {moreFilterCount}
               </span>
             )}
-          </Button>
+          </button>
         </div>
 
         {/* Filters panel */}
         {showFilters && (
           <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-semibold text-gray-900">Filters</h3>
+              <h3 className="text-sm font-semibold text-gray-900">More filters</h3>
               <button onClick={clearFilters} className="text-xs text-blue-600 hover:underline">
                 Clear all
               </button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Brand</label>
-                <select value={filters.brand_id} onChange={e => setFilters({ ...filters, brand_id: e.target.value })} className={selectClass}>
-                  <option value="">All Brands</option>
-                  {brands.map(b => <option key={b.brand_id} value={b.brand_id}>{b.brand_name}</option>)}
-                </select>
-              </div>
-
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Body Type</label>
                 <select value={filters.body_type} onChange={e => setFilters({ ...filters, body_type: e.target.value })} className={selectClass}>
@@ -206,16 +202,6 @@ function CarsContent() {
               </div>
 
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Min Price</label>
-                <input type="number" placeholder="e.g. 5000" value={filters.min_price} onChange={e => setFilters({ ...filters, min_price: e.target.value })} className={inputClass} />
-              </div>
-
-              <div>
-                <label className="block text-xs text-gray-500 mb-1">Max Price</label>
-                <input type="number" placeholder="e.g. 50000" value={filters.max_price} onChange={e => setFilters({ ...filters, max_price: e.target.value })} className={inputClass} />
-              </div>
-
-              <div>
                 <label className="block text-xs text-gray-500 mb-1">Min Year</label>
                 <input type="number" placeholder="e.g. 2018" value={filters.min_year} onChange={e => setFilters({ ...filters, min_year: e.target.value })} className={inputClass} />
               </div>
@@ -227,7 +213,7 @@ function CarsContent() {
             </div>
 
             <div className="flex justify-end mt-3">
-              <Button size="sm" onClick={applyFilters} className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button size="sm" onClick={() => applyFilters()} className="bg-blue-600 hover:bg-blue-700 text-white">
                 Apply Filters
               </Button>
             </div>
@@ -250,6 +236,18 @@ function CarsContent() {
                 <button onClick={() => setFilters({ ...filters, brand_id: '' })}><X className="h-3 w-3" /></button>
               </span>
             )}
+            {filters.seller_id && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+                {sellers.find(s => s.seller_id === filters.seller_id)?.fullname ?? 'Seller'}
+                <button onClick={() => setFilters({ ...filters, seller_id: '' })}><X className="h-3 w-3" /></button>
+              </span>
+            )}
+            {activePriceLabel && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md">
+                {activePriceLabel}
+                <button onClick={() => setFilters({ ...filters, min_price: '', max_price: '' })}><X className="h-3 w-3" /></button>
+              </span>
+            )}
             {filters.body_type && (
               <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md capitalize">
                 {filters.body_type}
@@ -263,14 +261,14 @@ function CarsContent() {
         )}
 
         {/* Results */}
-        {loading ? (
+        {loading && cars.length === 0 ? (
           <div className="flex justify-center items-center py-16">
             <Loader2 className="h-6 w-6 animate-spin text-blue-600 mr-2" />
             <span className="text-sm text-gray-500">Loading cars...</span>
           </div>
         ) : cars.length > 0 ? (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6 transition-opacity ${loading ? 'opacity-50' : ''}`} aria-busy={loading}>
               {cars.map((car, i) => (
                 <CarCard key={car.car_id} car={car} priority={i < 4} />
               ))}

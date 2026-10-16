@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get("search");
     const brand_id = searchParams.get("brand_id");
+    const seller_id = searchParams.get("seller_id");
     const min_price = searchParams.get("min_price");
     const max_price = searchParams.get("max_price");
     const min_year = searchParams.get("min_year");
@@ -59,6 +60,10 @@ export async function GET(request: NextRequest) {
 
     if (brand_id) {
       query = query.eq("brand_id", brand_id);
+    }
+
+    if (seller_id && !mine) {
+      query = query.eq("seller_id", seller_id);
     }
 
     if (min_price) {

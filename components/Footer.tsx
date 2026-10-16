@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import { Car } from 'lucide-react'
 import { useAuth } from '@/lib/auth-context'
 
 export function Footer() {
@@ -13,9 +12,7 @@ export function Footer() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center space-x-2 mb-3">
-              <div className="bg-blue-600 p-1.5 rounded-lg">
-                <Car className="h-4 w-4 text-white" />
-              </div>
+              <img src="/logo.webp" alt="Kampala Cars logo" width={40} height={40} className="h-10 w-10 rounded-lg" loading="lazy" />
               <span className="text-sm font-bold text-gray-900">Kampala Cars</span>
             </div>
             <p className="text-xs text-gray-500 leading-relaxed max-w-[200px]">

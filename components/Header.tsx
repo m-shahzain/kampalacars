@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from './ui/Button'
-import { Search, Car, User, LogOut, Plus, Shield } from 'lucide-react'
+import { Search, User, LogOut, Plus, Shield } from 'lucide-react'
 import { useState } from 'react'
 
 export function Header() {
@@ -23,9 +23,7 @@ export function Header() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-3">
-            <div className="bg-blue-600 p-2 rounded-lg">
-              <Car className="h-6 w-6 text-white" />
-            </div>
+            <img src="/logo.webp" alt="Kampala Cars logo" width={56} height={56} className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg shrink-0" />
             <div>
               <h1 className="text-xl font-bold text-gray-900">Kampala Cars</h1>
               <p className="text-sm text-gray-500 hidden sm:block">Your trusted car marketplace</p>

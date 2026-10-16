@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/lib/auth-context'
+import { compressImages } from '@/lib/compress-image'
 import { CarBrand, CarWithBrand } from '@/lib/types'
 
 const initialForm = {
@@ -23,6 +24,7 @@ export default function EditCarPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [processingPhotos, setProcessingPhotos] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
@@ -54,13 +56,17 @@ export default function EditCarPage() {
 
   const uploadPhotos = async (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
+    event.target.value = ''
     if (!files.length) return
-    setUploading(true); setError('')
+    setError('')
+    let compressed: File[]
+    setProcessingPhotos(true)
+    try { compressed = await compressImages(files) }
+    catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to process photos'); return }
+    finally { setProcessingPhotos(false) }
+    setUploading(true)
     try {
-      const urls = await Promise.all(files.map(async (file) => {
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 4 * 1024 * 1024) {
-          throw new Error('Photos must be JPG, PNG, or WebP and no larger than 4 MB.')
-        }
+      const urls = await Promise.all(compressed.map(async (file) => {
         const data = new FormData(); data.append('file', file)
         const response = await fetch('/api/upload', { method: 'POST', body: data })
         const result = await response.json()
@@ -69,7 +75,7 @@ export default function EditCarPage() {
       }))
       setForm((current) => ({ ...current, image_urls: [...current.image_urls, ...urls] }))
     } catch (reason) { setError(reason instanceof Error ? reason.message : 'Unable to upload photos') }
-    finally { setUploading(false); event.target.value = '' }
+    finally { setUploading(false) }
   }
 
   const submit = async (event: FormEvent) => {
@@ -112,8 +118,8 @@ export default function EditCarPage() {
       </div>
       <Field label="Description"><textarea rows={4} value={form.description} onChange={e => setForm({...form, description: e.target.value})}/></Field>
       <Field label="Features"><textarea rows={3} value={form.features} onChange={e => setForm({...form, features: e.target.value})}/></Field>
-      <div><label className="mb-2 block text-sm font-medium text-gray-700">Photos</label><div className="mb-3 flex flex-wrap gap-3">{form.image_urls.map((url, index) => <div key={`${url}-${index}`} className="relative h-24 w-32 overflow-hidden rounded border"><img src={url} alt={`Car photo ${index + 1}`} className="h-full w-full object-cover"/><button type="button" onClick={() => setForm({...form, image_urls: form.image_urls.filter((_, i) => i !== index)})} className="absolute right-1 top-1 rounded bg-red-600 px-2 py-1 text-xs text-white">Remove</button></div>)}</div><input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={uploading} onChange={uploadPhotos}/><p className="mt-1 text-xs text-gray-500">{uploading ? 'Uploading photos...' : 'Add or remove photos. JPG, PNG, or WebP up to 4 MB each.'}</p></div>
-      <div className="flex justify-end gap-3"><Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button><Button type="submit" loading={saving || uploading}>Save Changes</Button></div>
+      <div><label className="mb-2 block text-sm font-medium text-gray-700">Photos</label><div className="mb-3 flex flex-wrap gap-3">{form.image_urls.map((url, index) => <div key={`${url}-${index}`} className="relative h-24 w-32 overflow-hidden rounded border"><img src={url} alt={`Car photo ${index + 1}`} className="h-full w-full object-cover"/><button type="button" onClick={() => setForm({...form, image_urls: form.image_urls.filter((_, i) => i !== index)})} className="absolute right-1 top-1 rounded bg-red-600 px-2 py-1 text-xs text-white">Remove</button></div>)}</div><input type="file" accept="image/jpeg,image/png,image/webp" multiple disabled={uploading || processingPhotos} onChange={uploadPhotos}/><p className="mt-1 text-xs text-gray-500" aria-live="polite">{processingPhotos ? 'Processing photos...' : uploading ? 'Uploading photos...' : 'Add or remove photos. JPG, PNG, or WebP.'}</p></div>
+      <div className="flex justify-end gap-3"><Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button><Button type="submit" loading={saving || uploading || processingPhotos}>Save Changes</Button></div>
     </form>
   </div></Layout>
 }

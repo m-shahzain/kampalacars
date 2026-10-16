@@ -8,7 +8,6 @@ import { CarWithBrand } from "@/lib/types";
 import { formatPrice, formatDate } from "@/lib/utils";
 import {
   Calendar,
-  DollarSign,
   User,
   Phone,
   Mail,
@@ -232,7 +231,7 @@ export default function CarDetailsPage() {
                   <p className="text-sm font-semibold">{car.year}</p>
                 </div>
                 <div className="text-center p-2.5 bg-gray-50 rounded-lg">
-                  <DollarSign className="h-5 w-5 mx-auto text-green-600 mb-1" />
+                  <span className="block h-5 mb-1 text-sm font-bold leading-5 text-green-600" aria-hidden="true">USh</span>
                   <p className="text-xs text-gray-500">Price</p>
                   <p className="text-sm font-semibold text-green-600">
                     {formatPrice(car.price)}

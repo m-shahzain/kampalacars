@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context'
 import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
 import { CarWithBrand } from '@/lib/types'
+import { compressImages } from '@/lib/compress-image'
 import { 
   Car, 
   Search, 
@@ -57,6 +58,7 @@ export default function AdminCarsPage() {
   const [editing, setEditing] = useState<EditCarForm | null>(null)
   const [saving, setSaving] = useState(false)
   const [uploadingPhotos, setUploadingPhotos] = useState(false)
+  const [processingPhotos, setProcessingPhotos] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [brandFilter, setBrandFilter] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -212,11 +214,23 @@ export default function AdminCarsPage() {
 
   const handleAdminPhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || [])
+    event.target.value = ''
     if (!files.length || !editing) return
+
+    let compressed: File[]
+    setProcessingPhotos(true)
+    try {
+      compressed = await compressImages(files)
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Unable to process images')
+      return
+    } finally {
+      setProcessingPhotos(false)
+    }
 
     setUploadingPhotos(true)
     try {
-      const urls = await Promise.all(files.map(async (file) => {
+      const urls = await Promise.all(compressed.map(async (file) => {
         const formData = new FormData()
         formData.append('file', file)
         const response = await fetch('/api/upload', { method: 'POST', body: formData })
@@ -229,7 +243,6 @@ export default function AdminCarsPage() {
       alert(error instanceof Error ? error.message : 'Unable to upload images')
     } finally {
       setUploadingPhotos(false)
-      event.target.value = ''
     }
   }
 
@@ -718,15 +731,15 @@ export default function AdminCarsPage() {
                       </div>
                     ))}
                   </div>
-                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleAdminPhotoUpload} disabled={uploadingPhotos} className="block text-sm" />
-                  <p className="mt-1 text-xs text-gray-500">Upload photos to add them, or remove an existing photo. Each file must be 4 MB or smaller.</p>
+                  <input type="file" accept="image/jpeg,image/png,image/webp" multiple onChange={handleAdminPhotoUpload} disabled={uploadingPhotos || processingPhotos} className="block text-sm" />
+                  <p className="mt-1 text-xs text-gray-500" aria-live="polite">{processingPhotos ? 'Processing photos...' : uploadingPhotos ? 'Uploading photos...' : 'Upload photos to add them, or remove an existing photo.'}</p>
                 </div>
               </div>
               <div className="flex justify-end space-x-3 mt-6">
                 <Button type="button" variant="outline" onClick={() => setEditing(null)}>
                   Cancel
                 </Button>
-                <Button type="submit" loading={saving}>
+                <Button type="submit" loading={saving || uploadingPhotos || processingPhotos}>
                   Save Changes
                 </Button>
               </div>

@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
-import { Car, Mail, Lock, AlertCircle } from 'lucide-react'
+import { Mail, Lock, AlertCircle } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -38,9 +38,7 @@ export default function LoginPage() {
       <div className="flex items-center justify-center py-16 px-4">
         <div className="w-full max-w-sm">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl mb-4">
-              <Car className="h-6 w-6 text-white" />
-            </div>
+            <img src="/logo.webp" alt="Kampala Cars logo" width={80} height={80} className="mx-auto h-20 w-20 rounded-xl mb-4" />
             <h2 className="text-xl font-bold text-gray-900">Welcome back</h2>
             <p className="mt-1 text-sm text-gray-500">Sign in to your account</p>
           </div>

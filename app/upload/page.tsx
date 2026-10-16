@@ -7,14 +7,22 @@ import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/Button";
 import { CarBrand } from "@/lib/types";
 import {
+  ACCEPTED_IMAGE_TYPES,
+  MAX_SOURCE_IMAGE_BYTES,
+  compressImage,
+  compressImages,
+} from "@/lib/compress-image";
+import {
+  Loader2,
   Upload,
   Car,
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
 
-const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+// Drafts saved before photos were compressed on selection still hold originals.
+const needsCompression = (file: File) =>
+  !["image/webp", "image/jpeg"].includes(file.type) || file.size > 0.55 * 1024 * 1024;
 const DRAFT_STORAGE_KEY = "kampala-cars-listing-draft";
 const DRAFT_IMAGES_DB = "kampala-cars-drafts";
 const DRAFT_IMAGES_STORE = "images";
@@ -90,6 +98,7 @@ export default function UploadPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [processingImages, setProcessingImages] = useState(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [draftRestored, setDraftRestored] = useState(false);
@@ -108,12 +117,28 @@ export default function UploadPage() {
     }
 
     getDraftImages()
-      .then((images) => {
-        setImageFiles(images);
-        setImagePreviews(images.map((image) => URL.createObjectURL(image)));
+      .then(async (images) => {
+        if (images.some(needsCompression)) setProcessingImages(true);
+        const ready: File[] = [];
+        for (const image of images) {
+          if (!needsCompression(image)) {
+            ready.push(image);
+            continue;
+          }
+          try {
+            ready.push(await compressImage(image));
+          } catch {
+            // A draft photo that cannot be processed is dropped; the seller can add it again.
+          }
+        }
+        setImageFiles(ready);
+        setImagePreviews(ready.map((image) => URL.createObjectURL(image)));
       })
       .catch(() => undefined)
-      .finally(() => setDraftRestored(true));
+      .finally(() => {
+        setProcessingImages(false);
+        setDraftRestored(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -166,8 +191,11 @@ export default function UploadPage() {
     setFieldErrors((current) => ({ ...current, [field]: undefined }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    // Allow selecting the same file again later
+    e.target.value = "";
+    if (!files.length) return;
 
     if (files.length + imageFiles.length > 10) {
       setFieldErrors((current) => ({ ...current, images: "You can add up to 10 photos." }));
@@ -176,36 +204,34 @@ export default function UploadPage() {
 
     const invalidFile = files.find(
       (file) =>
-        !ALLOWED_IMAGE_TYPES.includes(file.type) ||
-        file.size > MAX_IMAGE_SIZE_BYTES
+        !ACCEPTED_IMAGE_TYPES.includes(file.type) ||
+        file.size > MAX_SOURCE_IMAGE_BYTES
     );
 
     if (invalidFile) {
       setFieldErrors((current) => ({ ...current, images:
-        !ALLOWED_IMAGE_TYPES.includes(invalidFile.type)
+        !ACCEPTED_IMAGE_TYPES.includes(invalidFile.type)
           ? "Images must be JPG, PNG, or WebP files"
-          : "Each image must be 4 MB or smaller"
+          : "Each image must be 25 MB or smaller"
       }));
-      e.target.value = "";
       return;
     }
 
     setFieldErrors((current) => ({ ...current, images: undefined }));
+    setProcessingImages(true);
 
-    setImageFiles((prev) => [...prev, ...files]);
-
-    files.forEach((file) => {
-      const reader = new FileReader();
-
-      reader.onloadend = () => {
-        setImagePreviews((prev) => [...prev, reader.result as string]);
-      };
-
-      reader.readAsDataURL(file);
-    });
-
-    // Allow selecting the same file again later
-    e.target.value = "";
+    try {
+      // Photos are shrunk before they are stored or uploaded.
+      const compressed = await compressImages(files);
+      setImageFiles((prev) => [...prev, ...compressed]);
+      setImagePreviews((prev) => [...prev, ...compressed.map((file) => URL.createObjectURL(file))]);
+    } catch (compressionError) {
+      setFieldErrors((current) => ({ ...current, images:
+        compressionError instanceof Error ? compressionError.message : "Could not process the selected photos."
+      }));
+    } finally {
+      setProcessingImages(false);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -444,10 +470,18 @@ export default function UploadPage() {
                       : "Add more photos"}
                   </p>
 
+                  {processingImages && (
+                    <p className="flex items-center justify-center text-sm text-blue-700 mb-2" aria-live="polite">
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing photos...
+                    </p>
+                  )}
+
                   <input
                     type="file"
                     accept="image/*"
                     multiple
+                    disabled={processingImages}
                     onChange={handleImageChange}
                     className="block w-full text-sm text-gray-500 file:mr-4 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     required={imageFiles.length === 0}
@@ -829,8 +863,10 @@ export default function UploadPage() {
                 Cancel
               </Button>
 
-              <Button type="submit" loading={loading || uploading} size="lg">
-                {uploading
+              <Button type="submit" loading={loading || uploading || processingImages} size="lg">
+                {processingImages
+                  ? "Processing photos..."
+                  : uploading
                   ? "Uploading Image..."
                   : loading
                   ? "Listing Car..."

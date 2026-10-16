@@ -1,9 +1,10 @@
 import sharp from "sharp";
 
+// Uploads are already compressed to 1600px, so the original serves as the
+// full-size image and only smaller variants are generated.
 export const CAR_IMAGE_VARIANTS = [
   { name: "thumb", width: 300 },
   { name: "card", width: 800 },
-  { name: "full", width: 1600 },
 ] as const;
 
 export function getCarImageVariantId(sourcePath: string) {

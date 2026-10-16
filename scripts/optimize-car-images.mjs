@@ -8,10 +8,10 @@ import sharp from "sharp";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const force = process.argv.includes("--force");
+// Originals are compressed to 1600px, so they double as the full-size image.
 const variants = [
   ["thumb", 300],
   ["card", 800],
-  ["full", 1600],
 ];
 
 async function loadLocalEnv() {
