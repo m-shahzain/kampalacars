@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
+        // Profile photos of people who sign in with Google.
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
         protocol: 'https',
         hostname: '*.amazonaws.com',
         port: '',

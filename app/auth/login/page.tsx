@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 import { Layout } from '@/components/Layout'
+import { GoogleSignInButton, OrDivider } from '@/components/GoogleSignInButton'
+import { VerifyCodeForm } from '@/components/VerifyCodeForm'
 import { Button } from '@/components/ui/Button'
 import { Mail, Lock, AlertCircle } from 'lucide-react'
 
@@ -13,24 +15,40 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [needsVerification, setNeedsVerification] = useState(false)
   
-  const { signIn } = useAuth()
+  const { signIn, verifyEmailCode, resendEmailCode } = useAuth()
   const router = useRouter()
+
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('error') === 'google') {
+      setError('Google sign-in did not finish. Please try again.')
+    }
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
 
-    const { error } = await signIn(email, password)
+    const { error, needsVerification } = await signIn(email.trim(), password)
     
     if (error) {
       setError(error.message)
+    } else if (needsVerification) {
+      // The account exists but the email was never confirmed; a code was just sent.
+      setNeedsVerification(true)
     } else {
       router.push('/dashboard')
     }
     
     setLoading(false)
+  }
+
+  const handleVerify = async (code: string) => {
+    const { error } = await verifyEmailCode(email.trim(), code)
+    if (!error) router.push('/dashboard')
+    return { error }
   }
 
   return (
@@ -44,6 +62,17 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            {needsVerification ? (
+              <VerifyCodeForm
+                email={email.trim()}
+                onVerify={handleVerify}
+                onResend={() => resendEmailCode(email.trim())}
+                onChangeEmail={() => setNeedsVerification(false)}
+              />
+            ) : (
+            <>
+            <GoogleSignInButton onError={setError} />
+            <OrDivider />
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -65,9 +94,14 @@ export default function LoginPage() {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                  Password
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                    Password
+                  </label>
+                  <Link href="/auth/forgot-password" className="text-xs font-medium text-gold-700 hover:text-gold-800">
+                    Forgot password?
+                  </Link>
+                </div>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <input
@@ -94,6 +128,8 @@ export default function LoginPage() {
                 Sign in
               </Button>
             </form>
+            </>
+            )}
           </div>
 
           <p className="text-center text-sm text-gray-500 mt-4">

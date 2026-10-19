@@ -1,13 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getSession } from '@/lib/session'
 
 export async function GET() {
   try {
-    const sessionCookie = (await cookies()).get('session')
-    if (!sessionCookie) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const session = await getSession()
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const session = JSON.parse(sessionCookie.value)
     if (session.userType === 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
     const supabase = await createClient()

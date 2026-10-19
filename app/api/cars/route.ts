@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getSession } from "@/lib/session";
 
 // GET /api/cars - Fetch all cars with optional search and filters
 export async function GET(request: NextRequest) {
@@ -23,9 +23,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "12");
     const offset = (page - 1) * limit;
 
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("session");
-    const sessionData = sessionCookie ? JSON.parse(sessionCookie.value) : null;
+    const sessionData = await getSession(supabase);
 
     if (mine && !sessionData?.userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -43,7 +41,7 @@ export async function GET(request: NextRequest) {
       )
       .order("created_at", { ascending: false });
 
-    if (mine) {
+    if (mine && sessionData) {
       query = query.eq("seller_id", sessionData.userId);
     } else {
       // Sold cars remain part of the public catalogue; the card identifies them
@@ -173,17 +171,18 @@ export async function GET(request: NextRequest) {
 // POST /api/cars - Create a new car listing
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get("session");
+    const sessionData = await getSession();
 
-    if (!sessionCookie) {
+    if (!sessionData) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const sessionData = JSON.parse(sessionCookie.value);
-
-    if (!sessionData.userId) {
-      return NextResponse.json({ error: "Invalid session" }, { status: 401 });
+    // Buyers contact the seller by phone, so every listing needs one.
+    if (!sessionData.phone) {
+      return NextResponse.json(
+        { error: "Add your phone number in your dashboard before listing a car" },
+        { status: 400 }
+      );
     }
 
     // Both buyers and sellers can create car listings.

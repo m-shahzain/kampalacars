@@ -1,21 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getSession } from '@/lib/session'
 
 // Check if user is admin
 async function checkAdminAuth() {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')
-
-  if (!sessionCookie) {
-    return { isAdmin: false, user: null }
-  }
-
-  const sessionData = JSON.parse(sessionCookie.value)
-  return { 
-    isAdmin: sessionData.userType === 'admin', 
-    user: sessionData 
-  }
+  const session = await getSession()
+  return { isAdmin: session?.userType === 'admin', user: session }
 }
 
 // GET /api/admin/stats - Get dashboard statistics (admin only)

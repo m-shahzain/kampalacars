@@ -1,21 +1,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getSession } from '@/lib/session'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 // Check if user is admin
 async function checkAdminAuth() {
-  const cookieStore = await cookies()
-  const sessionCookie = cookieStore.get('session')
-
-  if (!sessionCookie) {
-    return { isAdmin: false, user: null }
-  }
-
-  const sessionData = JSON.parse(sessionCookie.value)
-  return { 
-    isAdmin: sessionData.userType === 'admin', 
-    user: sessionData 
-  }
+  const session = await getSession()
+  return { isAdmin: session?.userType === 'admin', user: session }
 }
 
 // GET /api/admin/users - Get all users (admin only)
@@ -82,12 +73,24 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 })
     }
 
-    const supabase = await createClient()
+    // Roles and emails are protected columns, so admin changes use the service role.
+    const supabase = createAdminClient()
     const body = await request.json()
     const { user_id, fullname, email, phone, user_type, is_premium } = body
 
     if (!user_id) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+    }
+
+    // Keep the login email in sync with the profile email.
+    if (email) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(user_id)
+      if (authUser.user && authUser.user.email !== email) {
+        const { error: authError } = await supabase.auth.admin.updateUserById(user_id, { email, email_confirm: true })
+        if (authError) {
+          return NextResponse.json({ error: authError.message }, { status: 400 })
+        }
+      }
     }
 
     const { data: user, error } = await supabase
@@ -122,12 +125,18 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized - Admin access required' }, { status: 403 })
     }
 
-    const supabase = await createClient()
+    const supabase = createAdminClient()
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('user_id')
 
     if (!userId) {
       return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+    }
+
+    // Remove the login account; a user who was never migrated has none.
+    const { error: authError } = await supabase.auth.admin.deleteUser(userId)
+    if (authError && authError.status !== 404) {
+      return NextResponse.json({ error: authError.message }, { status: 400 })
     }
 
     const { error } = await supabase

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getSession } from '@/lib/session'
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -16,8 +16,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
     }
 
-    const sessionCookie = (await cookies()).get('session')
-    const session = sessionCookie ? JSON.parse(sessionCookie.value) : null
+    const session = await getSession(supabase)
     // The seller and admins can inspect a listing without inflating its audience count.
     if (session?.userId === car.seller_id || session?.userType === 'admin') {
       return NextResponse.json({ recorded: false })

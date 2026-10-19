@@ -1,14 +1,14 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
+import { getSession } from '@/lib/session'
 
 const VISITOR_COOKIE_MAX_AGE = 60 * 60 * 24 * 365
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
-    const session = sessionCookie ? JSON.parse(sessionCookie.value) : null
+    const session = await getSession()
 
     // Visitors without an account are identified by a random, long-lived cookie
     // so they can like a car once and unlike it again.

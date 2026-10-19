@@ -1,21 +1,18 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getSession } from '@/lib/session'
 import { createCarImageVariants } from '@/lib/car-image-variants'
 
 const MAX_IMAGE_SIZE_BYTES = 4 * 1024 * 1024
 
 export async function POST(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
+    const supabase = await createClient()
+    const sessionData = await getSession(supabase)
 
-    if (!sessionCookie) {
+    if (!sessionData) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const sessionData = JSON.parse(sessionCookie.value)
-    const supabase = await createClient()
 
     const formData = await request.formData()
     const file = formData.get('file') as File

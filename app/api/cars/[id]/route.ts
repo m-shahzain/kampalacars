@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { getSession } from '@/lib/session'
 import { cookies } from 'next/headers'
 
 // GET /api/cars/[id] - Fetch single car
@@ -10,9 +11,7 @@ export async function GET(
   try {
     const { id } = await params
     const supabase = await createClient()
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
-    const sessionData = sessionCookie ? JSON.parse(sessionCookie.value) : null
+    const sessionData = await getSession(supabase)
     
     const { data: car, error } = await supabase
       .from('cars')
@@ -56,7 +55,7 @@ export async function GET(
       .from('car_likes')
       .select('*', { count: 'exact', head: true })
       .eq('car_id', id)
-    const visitorId = cookieStore.get('visitor_id')?.value
+    const visitorId = (await cookies()).get('visitor_id')?.value
     const liker = sessionData?.userId
       ? { column: 'user_id', value: sessionData.userId as string }
       : visitorId
@@ -90,15 +89,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
+    const supabase = await createClient()
+    const sessionData = await getSession(supabase)
 
-    if (!sessionCookie) {
+    if (!sessionData) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const sessionData = JSON.parse(sessionCookie.value)
-    const supabase = await createClient()
     const { id } = await params
     
     // Check if user owns the car
@@ -214,15 +210,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
+    const supabase = await createClient()
+    const sessionData = await getSession(supabase)
 
-    if (!sessionCookie) {
+    if (!sessionData) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const sessionData = JSON.parse(sessionCookie.value)
-    const supabase = await createClient()
     const { id } = await params
     
     // Check if user owns the car

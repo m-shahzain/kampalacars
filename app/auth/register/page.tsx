@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { compressImage } from "@/lib/compress-image";
 import { Layout } from "@/components/Layout";
+import { GoogleSignInButton, OrDivider } from "@/components/GoogleSignInButton";
+import { VerifyCodeForm } from "@/components/VerifyCodeForm";
 import { Button } from "@/components/ui/Button";
 import { Mail, Lock, User, Phone, MapPin, AlertCircle, CheckCircle, ImagePlus } from "lucide-react";
 
@@ -22,11 +24,12 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [step, setStep] = useState<"form" | "verify">("form");
   const [profilePicture, setProfilePicture] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState("");
   const [processingPicture, setProcessingPicture] = useState(false);
 
-  const { signUp } = useAuth();
+  const { signUp, verifyEmailCode, resendEmailCode, updateProfile } = useAuth();
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -68,24 +71,35 @@ export default function RegisterPage() {
       return;
     }
 
-    const { error } = await signUp(
-      formData.email,
-      formData.password,
-      formData.fullName,
-      formData.phone,
-      formData.address,
-      profilePicture,
-      formData.userType
-    );
+    const { error } = await signUp({
+      email: formData.email.trim(),
+      password: formData.password,
+      fullName: formData.fullName,
+      phone: formData.phone,
+      address: formData.address,
+      userType: formData.userType,
+    });
 
     if (error) {
       setError(error.message);
     } else {
-      setSuccess(true);
-      setTimeout(() => router.push("/dashboard"), 2000);
+      setStep("verify");
     }
 
     setLoading(false);
+  };
+
+  const handleVerify = async (code: string) => {
+    const { error } = await verifyEmailCode(formData.email.trim(), code);
+    if (error) return { error };
+
+    // The picture can only be saved once the account is verified and signed in.
+    if (profilePicture) {
+      await updateProfile({ full_name: formData.fullName, phone: formData.phone }, profilePicture);
+    }
+    setSuccess(true);
+    setTimeout(() => router.push("/dashboard"), 1500);
+    return { error: null };
   };
 
   if (success) {
@@ -125,6 +139,17 @@ export default function RegisterPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            {step === "verify" ? (
+              <VerifyCodeForm
+                email={formData.email.trim()}
+                onVerify={handleVerify}
+                onResend={() => resendEmailCode(formData.email.trim())}
+                onChangeEmail={() => setStep("form")}
+              />
+            ) : (
+            <>
+            <GoogleSignInButton onError={setError} />
+            <OrDivider />
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
                 <label
@@ -272,6 +297,8 @@ export default function RegisterPage() {
                 Create Account
               </Button>
             </form>
+            </>
+            )}
           </div>
 
           <p className="text-center text-sm text-gray-500 mt-4">

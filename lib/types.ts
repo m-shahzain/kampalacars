@@ -2,7 +2,6 @@ export type User = {
   user_id: string
   fullname: string
   email: string
-  password: string
   phone?: string
   address?: string
   profile_picture_url?: string

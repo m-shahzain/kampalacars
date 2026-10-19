@@ -1,23 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
+import { getSession } from '@/lib/session'
 
 // GET /api/profile - Get current user profile
 export async function GET() {
   try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
+    const supabase = await createClient()
+    const sessionData = await getSession(supabase)
 
-    if (!sessionCookie) {
+    if (!sessionData) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const sessionData = JSON.parse(sessionCookie.value)
-    const supabase = await createClient()
-
     const { data: user, error } = await supabase
       .from('users')
-      .select('user_id, fullname, email, phone, profile_picture_url, user_type, is_premium, created_at')
+      .select('user_id, fullname, email, phone, address, profile_picture_url, user_type, is_premium, created_at')
       .eq('user_id', sessionData.userId)
       .single()
 
@@ -34,19 +31,17 @@ export async function GET() {
 // PUT /api/profile - Update user profile
 export async function PUT(request: NextRequest) {
   try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
+    const supabase = await createClient()
+    const sessionData = await getSession(supabase)
 
-    if (!sessionCookie) {
+    if (!sessionData) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-
-    const sessionData = JSON.parse(sessionCookie.value)
-    const supabase = await createClient()
     
     const formData = await request.formData()
     const fullname = formData.get('fullname')?.toString()
     const phone = formData.get('phone')?.toString()
+    const address = formData.get('address')?.toString().trim()
     const profilePicture = formData.get('profile_picture')
 
     if (!fullname || !phone) {
@@ -91,10 +86,11 @@ export async function PUT(request: NextRequest) {
       .update({
         fullname,
         phone,
+        ...(address && { address }),
         ...(profilePictureUrl && { profile_picture_url: profilePictureUrl })
       })
       .eq('user_id', sessionData.userId)
-      .select('user_id, fullname, email, phone, profile_picture_url, user_type, is_premium, created_at')
+      .select('user_id, fullname, email, phone, address, profile_picture_url, user_type, is_premium, created_at')
       .single()
 
     if (error) {

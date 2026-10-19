@@ -1,42 +1,30 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
 
+// GET /api/auth/session - The signed-in user's profile, or null for visitors.
 export async function GET() {
   try {
-    const cookieStore = await cookies()
-    const sessionCookie = cookieStore.get('session')
-
-    if (!sessionCookie) {
-      return NextResponse.json({ user: null })
-    }
-
-    const sessionData = JSON.parse(sessionCookie.value)
     const supabase = await createClient()
+    const { data } = await supabase.auth.getClaims()
+    const userId = data?.claims?.sub
 
-    // Get user from users table (no profiles table in new schema)
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('user_id, fullname, email, phone, user_type, is_premium, profile_picture_url, created_at')
-      .eq('user_id', sessionData.userId)
-      .single()
-
-    if (error || !user) {
-      // Clear invalid session
-      cookieStore.delete('session')
+    if (!userId) {
       return NextResponse.json({ user: null })
     }
 
-    return NextResponse.json({ 
+    const { data: user } = await supabase
+      .from('users')
+      .select('user_id, fullname, email, phone, address, user_type, is_premium, profile_picture_url, created_at')
+      .eq('user_id', userId)
+      .maybeSingle()
+
+    if (!user) {
+      return NextResponse.json({ user: null })
+    }
+
+    return NextResponse.json({
       user: {
-        user_id: user.user_id,
-        email: user.email,
-        fullname: user.fullname,
-        phone: user.phone,
-        user_type: user.user_type,
-        is_premium: user.is_premium,
-        profile_picture_url: user.profile_picture_url,
-        created_at: user.created_at,
+        ...user,
         // For backward compatibility with components expecting profile
         profile: {
           full_name: user.fullname,
@@ -44,7 +32,7 @@ export async function GET() {
         }
       }
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json({ user: null })
   }
-} 
+}
