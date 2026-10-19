@@ -12,15 +12,17 @@ import { Fuel, Gauge, Car as CarIcon, UserRound } from 'lucide-react'
 interface CarCardProps {
   car: CarWithBrand
   priority?: boolean
+  /** Hide the "Listed by" line, e.g. on the seller's own page. */
+  showSeller?: boolean
 }
 
-export function CarCard({ car, priority = false }: CarCardProps) {
+export function CarCard({ car, priority = false, showSeller = true }: CarCardProps) {
   const [imgError, setImgError] = useState(false)
   const [profileImageError, setProfileImageError] = useState(false)
   const carImage = getCarImageSources(car.image_urls?.[0])
 
   return (
-    <Link href={`/cars/${car.car_id}`} className="group block">
+    <div className="group relative">
       <div className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md hover:border-gray-300 transition-all duration-200">
         <div className="relative aspect-[16/10] w-full bg-gray-100">
           {imgError ? (
@@ -51,7 +53,10 @@ export function CarCard({ car, priority = false }: CarCardProps) {
         <div className="p-4">
           <div className="flex items-start justify-between gap-2 mb-1">
             <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-gold-700 transition-colors">
-              {car.car_brands.brand_name} {car.model}
+              {/* Stretched link: the whole card opens the car. */}
+              <Link href={`/cars/${car.car_id}`} className="after:absolute after:inset-0 after:content-['']">
+                {car.car_brands.brand_name} {car.model}
+              </Link>
             </h3>
             <span className="text-xs text-gray-500 shrink-0">{car.year}</span>
           </div>
@@ -74,7 +79,11 @@ export function CarCard({ car, priority = false }: CarCardProps) {
             <span className="capitalize">{car.transmission}</span>
           </div>
 
-          <div className="mt-3 flex items-center gap-1.5 text-xs text-gray-500">
+          {showSeller && (
+          <Link
+            href={`/sellers/${car.seller_id}`}
+            className="relative z-10 mt-3 flex w-fit max-w-full items-center gap-1.5 text-xs text-gray-500 hover:text-gold-700"
+          >
             {car.users?.profile_picture_url && !profileImageError ? (
               <Image
                 src={car.users.profile_picture_url}
@@ -90,9 +99,10 @@ export function CarCard({ car, priority = false }: CarCardProps) {
               </span>
             )}
             <span className="truncate">Listed by {car.users?.fullname || 'Kampala Cars'}</span>
-          </div>
+          </Link>
+          )}
         </div>
       </div>
-    </Link>
+    </div>
   )
 }

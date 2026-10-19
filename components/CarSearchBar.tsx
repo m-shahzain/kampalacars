@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Banknote, ChevronDown, Search, Store, Tag } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { cn, formatCompactPrice } from '@/lib/utils'
@@ -72,6 +73,7 @@ interface CarSearchBarProps {
 }
 
 export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, live = false, className }: CarSearchBarProps) {
+  const router = useRouter()
   const [draft, setDraft] = useState(values)
   const [priceOpen, setPriceOpen] = useState(false)
   const priceRef = useRef<HTMLDivElement>(null)
@@ -178,7 +180,11 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
           <span className="sr-only">Seller</span>
           <select
             value={draft.seller_id}
-            onChange={(event) => update({ seller_id: event.target.value })}
+            onChange={(event) => {
+              // Picking a seller opens their own page with all their cars.
+              if (event.target.value) router.push(`/sellers/${event.target.value}`)
+              else update({ seller_id: '' })
+            }}
             className="w-full h-full appearance-none bg-transparent pl-9 pr-8 text-sm text-gray-700 truncate cursor-pointer focus:outline-none"
           >
             <option value="">All sellers</option>

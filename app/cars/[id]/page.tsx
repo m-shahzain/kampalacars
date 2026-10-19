@@ -356,6 +356,12 @@ export default function CarDetailsPage() {
                     Call {car.contact?.is_seller ? "Seller" : "Kampala Cars"}
                   </Button>
                 )}
+                <Link
+                  href={`/sellers/${car.seller_id}`}
+                  className="block pt-1 text-center text-sm font-medium text-gold-700 hover:text-gold-800"
+                >
+                  See all cars from {car.users?.fullname || "this seller"} →
+                </Link>
               </div>
 
               {/* Contact Form */}
