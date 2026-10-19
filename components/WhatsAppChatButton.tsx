@@ -1,8 +1,9 @@
-const WHATSAPP_NUMBER = "256752328882";
+import { whatsappUrl } from "@/lib/contact";
+
 const WHATSAPP_MESSAGE = "Hello Kampala Cars, I would like to make an enquiry.";
 
 export function WhatsAppChatButton() {
-  const chatUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(WHATSAPP_MESSAGE)}`;
+  const chatUrl = whatsappUrl(WHATSAPP_MESSAGE);
 
   return (
     <a

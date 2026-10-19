@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Layout } from '@/components/Layout'
+import { PHONE_DISPLAY, whatsappUrl } from '@/lib/contact'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy | Kampala Cars',
@@ -7,8 +8,6 @@ export const metadata: Metadata = {
 }
 
 const LAST_UPDATED = 'October 18, 2026'
-const CONTACT_WHATSAPP = '+256 752 328 882'
-const CONTACT_WHATSAPP_URL = 'https://wa.me/256752328882'
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -89,8 +88,8 @@ export default function PrivacyPolicyPage() {
           <Section title="Contact us">
             <p>
               For privacy questions or requests, message us on WhatsApp at{' '}
-              <a href={CONTACT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="font-medium text-gold-700 hover:text-gold-800">
-                {CONTACT_WHATSAPP}
+              <a href={whatsappUrl()} target="_blank" rel="noopener noreferrer" className="font-medium text-gold-700 hover:text-gold-800">
+                {PHONE_DISPLAY}
               </a>.
             </p>
           </Section>
