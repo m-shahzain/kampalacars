@@ -1,14 +1,18 @@
 import type { Metadata } from "next"
 import { headers } from "next/headers"
 import { createClient } from "@/lib/supabase/server"
+import { PREVIEW_HEIGHT, PREVIEW_WIDTH } from "@/lib/preview-image"
+import { formatPrice } from "@/lib/utils"
 
 type ListingMetadata = {
   title: string
   model: string
   year: number
   description: string | null
+  price: number
+  is_sold: boolean
   image_urls: string[] | null
-  car_brands: { brand_name: string }[] | null
+  car_brands: { brand_name: string } | { brand_name: string }[] | null
 }
 
 function descriptionFor(car: ListingMetadata, title: string) {
@@ -35,7 +39,7 @@ export async function generateMetadata(
   const supabase = await createClient()
   const { data: car } = await supabase
     .from("cars")
-    .select("title, model, year, description, image_urls, car_brands!inner(brand_name)")
+    .select("title, model, year, description, price, is_sold, image_urls, car_brands!inner(brand_name)")
     .eq("car_id", id)
     .eq("approval_status", "approved")
     .maybeSingle()
@@ -48,29 +52,41 @@ export async function generateMetadata(
   }
 
   const listing = car as ListingMetadata
-  const title = `${listing.year} ${listing.car_brands?.[0]?.brand_name ?? ""} ${listing.model}`.replace(/\s+/g, " ").trim()
+  // Supabase returns the brand as an object for this one-to-one join.
+  const brand = Array.isArray(listing.car_brands) ? listing.car_brands[0] : listing.car_brands
+  const title = `${listing.year} ${brand?.brand_name ?? ""} ${listing.model}`.replace(/\s+/g, " ").trim()
+  const price = listing.is_sold ? "SOLD" : formatPrice(Number(listing.price))
+  const shareTitle = `${title} · ${price}`
   const description = descriptionFor(listing, title)
-  const image = listing.image_urls?.[0]
   const baseUrl = await siteUrl()
   const url = new URL(`/cars/${id}`, baseUrl).toString()
+  // A branded JPEG preview; the version changes when the main photo changes so apps refresh it.
+  const photoVersion = listing.image_urls?.[0]?.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "none"
+  const image = {
+    url: new URL(`/cars/${id}/preview.jpg?v=${photoVersion}`, baseUrl).toString(),
+    width: PREVIEW_WIDTH,
+    height: PREVIEW_HEIGHT,
+    type: "image/jpeg",
+    alt: title,
+  }
 
   return {
-    title: `${title} | Kampala Cars`,
+    title: `${shareTitle} | Kampala Cars`,
     description,
     alternates: { canonical: url },
     openGraph: {
       type: "website",
       url,
-      title: `${title} | Kampala Cars`,
+      title: shareTitle,
       description,
       siteName: "Kampala Cars",
-      ...(image ? { images: [{ url: image, alt: title }] } : {}),
+      images: [image],
     },
     twitter: {
-      card: image ? "summary_large_image" : "summary",
-      title: `${title} | Kampala Cars`,
+      card: "summary_large_image",
+      title: shareTitle,
       description,
-      ...(image ? { images: [image] } : {}),
+      images: [image.url],
     },
   }
 }

@@ -6,10 +6,10 @@ type Props = { searchParams: Promise<Record<string, string | string[] | undefine
 
 export default async function HomePage({ searchParams }: Props) {
   // Links filtered to one seller (?seller_id=...) open that seller's page instead.
-  const { seller_id: sellerId } = await searchParams
+  const { seller_id: sellerId, ...otherFilters } = await searchParams
   if (typeof sellerId === 'string' && isUuid(sellerId)) {
     const seller = await getPublicSeller(sellerId)
-    if (seller) redirect(sellerPath(seller))
+    if (seller) redirect(sellerPath(seller, otherFilters))
   }
 
   return <HomeClient />

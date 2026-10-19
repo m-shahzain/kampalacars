@@ -2,13 +2,17 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { ArrowLeft, UserRound } from 'lucide-react'
 import { Layout } from '@/components/Layout'
 import { SellerListings } from '@/components/SellerListings'
 import { ShareLinkButtons } from '@/components/ShareLinkButtons'
 import { carsLabel, getPublicSeller, isUuid, sellerMetadata, sellerPath } from '@/lib/sellers'
 
-type Props = { params: Promise<{ slug: string }> }
+type Props = {
+  params: Promise<{ slug: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
@@ -20,13 +24,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return sellerMetadata(seller)
 }
 
-export default async function SellerPage({ params }: Props) {
+export default async function SellerPage({ params, searchParams }: Props) {
   const { slug } = await params
   const seller = await getPublicSeller(decodeURIComponent(slug))
   if (!seller) notFound()
 
   // Links that use the account id move to the short, readable address.
-  if (isUuid(slug) && seller.slug) permanentRedirect(sellerPath(seller))
+  if (isUuid(slug) && seller.slug) permanentRedirect(sellerPath(seller, await searchParams))
 
   const memberSince = new Intl.DateTimeFormat('en-UG', { month: 'long', year: 'numeric' }).format(new Date(seller.memberSince))
 
@@ -63,7 +67,9 @@ export default async function SellerPage({ params }: Props) {
           <ShareLinkButtons message={`Check out cars from ${seller.name} on Kampala Cars:`} />
         </section>
 
-        <SellerListings sellerId={seller.userId} />
+        <Suspense>
+          <SellerListings sellerId={seller.userId} basePath={sellerPath(seller)} />
+        </Suspense>
       </div>
     </Layout>
   )

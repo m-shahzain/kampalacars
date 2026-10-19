@@ -181,8 +181,17 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
           <select
             value={draft.seller_id}
             onChange={(event) => {
-              // Picking a seller opens their own page with all their cars.
-              if (event.target.value) router.push(`/sellers/${event.target.value}`)
+              const sellerId = event.target.value
+              // The other filters come along to the next page.
+              const query = new URLSearchParams()
+              Object.entries(draft).forEach(([key, value]) => {
+                if (key !== 'seller_id' && value.trim()) query.set(key, value.trim())
+              })
+              const queryString = query.toString() ? `?${query}` : ''
+
+              // Picking a seller opens their own page; "All sellers" on a seller page goes back to all cars.
+              if (sellerId) router.push(`/sellers/${sellerId}${queryString}`)
+              else if (values.seller_id) router.push(`/cars${queryString}`)
               else update({ seller_id: '' })
             }}
             className="w-full h-full appearance-none bg-transparent pl-9 pr-8 text-sm text-gray-700 truncate cursor-pointer focus:outline-none"
