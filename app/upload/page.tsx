@@ -46,11 +46,27 @@ function openDraftDatabase(): Promise<IDBDatabase> {
   });
 }
 
+// Draft photos are stored as raw bytes: Safari on iPhone can lose the contents
+// of File objects kept in IndexedDB, which made uploads fail later.
+type DraftImageRecord = { name: string; type: string; lastModified: number; data: ArrayBuffer };
+
 async function saveDraftImages(images: File[]) {
+  const records = (
+    await Promise.all(
+      images.map(async (image): Promise<DraftImageRecord | null> => {
+        try {
+          return { name: image.name, type: image.type, lastModified: image.lastModified, data: await image.arrayBuffer() };
+        } catch {
+          return null;
+        }
+      })
+    )
+  ).filter((record): record is DraftImageRecord => record !== null);
+
   const database = await openDraftDatabase();
   await new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(DRAFT_IMAGES_STORE, "readwrite");
-    transaction.objectStore(DRAFT_IMAGES_STORE).put(images, "listing");
+    transaction.objectStore(DRAFT_IMAGES_STORE).put(records, "listing");
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
   });
@@ -59,13 +75,21 @@ async function saveDraftImages(images: File[]) {
 
 async function getDraftImages(): Promise<File[]> {
   const database = await openDraftDatabase();
-  const images = await new Promise<File[]>((resolve, reject) => {
+  const stored = await new Promise<(DraftImageRecord | File)[]>((resolve, reject) => {
     const request = database.transaction(DRAFT_IMAGES_STORE).objectStore(DRAFT_IMAGES_STORE).get("listing");
     request.onsuccess = () => resolve(request.result || []);
     request.onerror = () => reject(request.error);
   });
   database.close();
-  return images;
+
+  const images = stored.map((item) =>
+    item instanceof Blob ? item : new File([item.data], item.name, { type: item.type, lastModified: item.lastModified })
+  );
+  // Drop photos whose contents can no longer be read (older drafts saved as File objects).
+  const readable = await Promise.all(
+    images.map((image) => image.arrayBuffer().then((bytes) => bytes.byteLength > 0, () => false))
+  );
+  return images.filter((_, index) => readable[index]);
 }
 
 async function clearDraftImages() {
@@ -265,9 +289,15 @@ export default function UploadPage() {
     try {
       const urls: string[] = [];
 
-      for (const file of imageFiles) {
+      for (const [index, file] of imageFiles.entries()) {
+        // Read the photo first so an unreadable one gets a clear message instead of a failed upload.
+        const bytes = await file.arrayBuffer().catch(() => null);
+        if (!bytes?.byteLength) {
+          throw new Error(`Photo ${index + 1} could not be read. Please remove it and add it again; the rest of your draft is saved.`);
+        }
+
         const fd = new FormData();
-        fd.append("file", file);
+        fd.append("file", new File([bytes], file.name, { type: file.type }));
 
         const response = await fetch("/api/upload", {
           method: "POST",
@@ -278,9 +308,11 @@ export default function UploadPage() {
 
         if (!response.ok) {
           throw new Error(
-            response.status === 413
+            response.status === 401
+              ? "Your login has expired. Please log in again; your draft is saved."
+              : response.status === 413
               ? "Image upload is too large. Each image must be 4 MB or smaller"
-              : data.error || "Image upload failed"
+              : `Photo upload failed: ${data.error || `server error ${response.status}`}`
           );
         }
 
@@ -360,10 +392,20 @@ export default function UploadPage() {
       } else {
         const message = String(data.error || "").toLowerCase();
         if (message.includes("chassis")) setFieldErrors({ chassis_number: "This chassis number is already in use." });
-        else setError("We could not save your listing. Your draft has been kept—please try again.");
+        else if (response.status === 401) setError("Your login has expired. Please log in again; your draft is saved.");
+        // Show the server's reason (e.g. a missing phone number) so the seller knows what to fix.
+        else setError(`We could not save your listing: ${data.error || `server error ${response.status}`}. Your draft has been kept.`);
       }
-    } catch (err: any) {
-      setError("We could not save your listing. Check your connection and try again—your draft is safe.");
+    } catch (err) {
+      console.error("Listing submit failed:", err);
+      // fetch() rejects with a TypeError only when the request could not be sent at all.
+      setError(
+        err instanceof TypeError
+          ? "We could not reach Kampala Cars. Check your connection and try again; your draft is safe."
+          : err instanceof Error
+          ? err.message
+          : "We could not save your listing. Please try again; your draft is safe."
+      );
     } finally {
       setLoading(false);
     }

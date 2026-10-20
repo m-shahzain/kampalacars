@@ -21,6 +21,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
+    if (!file.size) {
+      return NextResponse.json({ error: 'The photo was empty. Please remove it and add it again.' }, { status: 400 })
+    }
+
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
@@ -45,6 +49,7 @@ export async function POST(request: NextRequest) {
       })
 
     if (error) {
+      console.error('Car image upload to storage failed:', fileName, error.message)
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
@@ -67,6 +72,7 @@ export async function POST(request: NextRequest) {
       path: data.path 
     })
   } catch (error) {
+    console.error('POST /api/upload failed:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 } 
