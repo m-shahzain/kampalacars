@@ -9,6 +9,15 @@ async function checkAdminAuth() {
   return { isAdmin: session?.userType === 'admin', user: session }
 }
 
+// Explain a missing server key instead of a bare "Internal server error".
+function adminErrorResponse(error: unknown) {
+  console.error('Admin users request failed:', error)
+  const message = error instanceof Error && error.message.includes('SUPABASE_SERVICE_ROLE_KEY')
+    ? 'Server setup: SUPABASE_SERVICE_ROLE_KEY is missing. Add it in your hosting settings and redeploy.'
+    : 'Internal server error'
+  return NextResponse.json({ error: message }, { status: 500 })
+}
+
 // GET /api/admin/users - Get all users (admin only)
 export async function GET(request: NextRequest) {
   try {
@@ -60,7 +69,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return adminErrorResponse(error)
   }
 }
 
@@ -112,7 +121,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ user })
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return adminErrorResponse(error)
   }
 }
 
@@ -150,6 +159,6 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ message: 'User deleted successfully' })
   } catch (error) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return adminErrorResponse(error)
   }
 } 
