@@ -2,6 +2,11 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  // Visitors and search bots have no Supabase auth cookie, so there is no session to refresh.
+  if (!request.cookies.getAll().some(({ name }) => name.startsWith('sb-'))) {
+    return NextResponse.next({ request })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })

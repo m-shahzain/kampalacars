@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef, Suspense } from 'react'
+import { useState, useEffect, useRef, Suspense, type ReactNode } from 'react'
 import { Layout } from '@/components/Layout'
 import { CarCard } from '@/components/CarCard'
 import { Button } from '@/components/ui/Button'
@@ -11,17 +11,27 @@ import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { useFiltersInUrl } from '@/lib/use-filters-in-url'
+import type { CarsPage } from '@/lib/cars-server'
 
-function HomeContent() {
+type HomeProps = {
+  /** The first page of cars, loaded on the server so they are in the page's HTML. */
+  initialPage: CarsPage
+  /** Shown below the listings. */
+  children?: ReactNode
+}
+
+function HomeContent({ initialPage, children }: HomeProps) {
   const { user } = useAuth()
-  const [cars, setCars] = useState<CarWithBrand[]>([])
-  const [loading, setLoading] = useState(true)
+  const [cars, setCars] = useState<CarWithBrand[]>(initialPage.cars)
+  const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
-  const [total, setTotal] = useState(0)
+  const [hasMore, setHasMore] = useState(initialPage.hasMore)
+  const [total, setTotal] = useState(initialPage.total)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const latestRequest = useRef(0)
+  // The server already loaded the first page for the filters in the address.
+  const hasInitialPage = useRef(true)
   
   const searchOptions = useSearchOptions()
   const searchParams = useSearchParams()
@@ -64,6 +74,10 @@ function HomeContent() {
   }
 
   useEffect(() => {
+    if (hasInitialPage.current) {
+      hasInitialPage.current = false
+      return
+    }
     fetchCars(1)
   }, [filters])
 
@@ -83,7 +97,7 @@ function HomeContent() {
         {/* Hero Section */}
         <div className="text-center mb-8 bg-gray-50 border border-gray-200 rounded-xl py-10 px-4 sm:px-6">
           <h1 className="text-2xl md:text-3xl font-bold mb-3 text-gray-900">
-            Find Your Perfect Car
+            Used Cars for Sale in Kampala, Uganda
           </h1>
           <p className="text-gray-500 mb-6 max-w-lg mx-auto text-sm">
             Discover quality vehicles in Kampala. Your trusted marketplace for buying and selling cars.
@@ -156,12 +170,14 @@ function HomeContent() {
             </div>
           </div>
         )}
+
+        {children}
       </div>
     </Layout>
   )
 }
 
-export default function Home() {
+export default function Home(props: HomeProps) {
   return (
     <Suspense fallback={
       <Layout>
@@ -173,7 +189,7 @@ export default function Home() {
         </div>
       </Layout>
     }>
-      <HomeContent />
+      <HomeContent {...props} />
     </Suspense>
   )
 }

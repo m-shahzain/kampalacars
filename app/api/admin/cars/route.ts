@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
+import { expirePublicCars } from "@/lib/cars-server";
 
 // Check if user is admin or not
 async function checkAdminAuth() {
@@ -189,6 +190,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    expirePublicCars();
     return NextResponse.json({ car });
   } catch (error) {
     return NextResponse.json(
@@ -227,6 +229,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
+    expirePublicCars();
     return NextResponse.json({ message: "Car deleted successfully" });
   } catch (error) {
     return NextResponse.json(

@@ -7,6 +7,8 @@ import { useState } from 'react'
 import { CarWithBrand } from '@/lib/types'
 import { formatPrice } from '@/lib/utils'
 import { fallbackToOriginalCarImage, getCarImageSources } from '@/lib/car-image'
+import { carName, carPath, sellerHref } from '@/lib/car-paths'
+import { fuelLabel, transmissionLabel } from '@/lib/car-labels'
 import { Fuel, Gauge, Car as CarIcon, UserRound } from 'lucide-react'
 
 interface CarCardProps {
@@ -20,6 +22,7 @@ export function CarCard({ car, priority = false, showSeller = true }: CarCardPro
   const [imgError, setImgError] = useState(false)
   const [profileImageError, setProfileImageError] = useState(false)
   const carImage = getCarImageSources(car.image_urls?.[0])
+  const name = carName(car)
 
   return (
     <div className="group relative">
@@ -34,7 +37,7 @@ export function CarCard({ car, priority = false, showSeller = true }: CarCardPro
               src={carImage?.src || '/car-placeholder.svg'}
               srcSet={carImage?.srcSet}
               sizes={carImage?.sizes || "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-              alt={`${car.car_brands.brand_name} ${car.model}`}
+              alt={`${car.year} ${name}`}
               className="absolute inset-0 h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-200"
               loading={priority ? "eager" : "lazy"}
               fetchPriority={priority ? "high" : "auto"}
@@ -54,8 +57,8 @@ export function CarCard({ car, priority = false, showSeller = true }: CarCardPro
           <div className="flex items-start justify-between gap-2 mb-1">
             <h3 className="text-sm font-semibold text-gray-900 line-clamp-1 group-hover:text-gold-700 transition-colors">
               {/* Stretched link: the whole card opens the car. */}
-              <Link href={`/cars/${car.car_id}`} className="after:absolute after:inset-0 after:content-['']">
-                {car.car_brands.brand_name} {car.model}
+              <Link href={carPath(car)} className="after:absolute after:inset-0 after:content-['']">
+                {name}
               </Link>
             </h3>
             <span className="text-xs text-gray-500 shrink-0">{car.year}</span>
@@ -74,14 +77,14 @@ export function CarCard({ car, priority = false, showSeller = true }: CarCardPro
             )}
             <span className="flex items-center gap-1">
               <Fuel className="h-3.5 w-3.5" />
-              {car.fuel_type}
+              {fuelLabel(car.fuel_type)}
             </span>
-            <span className="capitalize">{car.transmission}</span>
+            <span>{transmissionLabel(car.transmission)}</span>
           </div>
 
           {showSeller && (
           <Link
-            href={`/sellers/${car.seller_id}`}
+            href={sellerHref(car)}
             className="relative z-10 mt-3 flex w-fit max-w-full items-center gap-1.5 text-xs text-gray-500 hover:text-gold-700"
           >
             {car.users?.profile_picture_url && !profileImageError ? (

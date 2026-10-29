@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context'
 import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
 import { CarWithBrand } from '@/lib/types'
+import { carPath } from '@/lib/car-paths'
 import { compressImages } from '@/lib/compress-image'
 import { 
   Car, 
@@ -468,7 +469,7 @@ export default function AdminCarsPage() {
                                 <Button variant="outline" size="sm" loading={updating === car.car_id} onClick={() => handleApproval(car, 'rejected')}>Reject</Button>
                               </>
                             )}
-                            <Link href={`/cars/${car.car_id}`}>
+                            <Link href={carPath(car)}>
                               <Button variant="outline" size="sm">
                                 <Eye className="h-4 w-4 mr-1" />
                                 View

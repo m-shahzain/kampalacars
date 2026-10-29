@@ -7,6 +7,7 @@ export type User = {
   profile_picture_url?: string
   user_type: 'seller' | 'buyer' | 'admin'
   is_premium: boolean
+  slug?: string | null
   created_at: string
 }
 
@@ -40,11 +41,13 @@ export type Car = {
   approved_at?: string | null
   image_urls: string[]
   created_at: string
+  /** Set by docs/add-car-updated-at-migration.sql; missing until it has run. */
+  updated_at?: string | null
 }
 
 export type CarWithBrand = Car & {
   car_brands: CarBrand
-  users: Pick<User, 'user_id' | 'fullname' | 'email' | 'phone' | 'is_premium' | 'profile_picture_url'>
+  users: Pick<User, 'user_id' | 'fullname' | 'email' | 'phone' | 'is_premium' | 'profile_picture_url' | 'slug'>
   contact: Pick<User, 'fullname' | 'email' | 'phone'> & { is_seller: boolean }
   likes_count?: number
   liked_by_current_user?: boolean

@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { notFound, permanentRedirect } from 'next/navigation'
-import Link from 'next/link'
 import { Suspense } from 'react'
-import { ArrowLeft, UserRound } from 'lucide-react'
+import { UserRound } from 'lucide-react'
 import { Layout } from '@/components/Layout'
+import { Breadcrumbs } from '@/components/Breadcrumbs'
 import { SellerListings } from '@/components/SellerListings'
 import { ShareLinkButtons } from '@/components/ShareLinkButtons'
 import { carsLabel, getPublicSeller, isUuid, sellerMetadata, sellerPath } from '@/lib/sellers'
@@ -37,10 +37,7 @@ export default async function SellerPage({ params, searchParams }: Props) {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
-        <Link href="/cars" className="mb-4 inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900">
-          <ArrowLeft className="h-4 w-4" />
-          All cars
-        </Link>
+        <Breadcrumbs items={[{ name: 'Cars', href: '/cars' }, { name: seller.name, href: sellerPath(seller) }]} />
 
         <section className="mb-8 flex flex-col gap-5 rounded-2xl border border-gray-200 bg-gray-50 p-6 sm:flex-row sm:items-center">
           {seller.profilePictureUrl ? (

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/session'
-import { cookies } from 'next/headers'
+import { expirePublicCars, getCarDetails } from '@/lib/cars-server'
 
 // GET /api/cars/[id] - Fetch single car
 export async function GET(
@@ -10,74 +10,11 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const supabase = await createClient()
-    const sessionData = await getSession(supabase)
-    
-    const { data: car, error } = await supabase
-      .from('cars')
-      .select(`
-        *,
-        car_brands!inner(brand_id, brand_name),
-        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium, profile_picture_url)
-      `)
-      .eq('car_id', id)
-      .single()
-
-    if (error || !car) {
+    const car = await getCarDetails(id)
+    if (!car) {
       return NextResponse.json({ error: 'Car not found' }, { status: 404 })
     }
-
-    const canViewUnapproved = sessionData?.userType === 'admin' || sessionData?.userId === car.seller_id
-    if (car.approval_status !== 'approved' && !canViewUnapproved) {
-      return NextResponse.json({ error: 'Car not found' }, { status: 404 })
-    }
-
-    const { data: adminContact } = car.users.is_premium
-      ? { data: null }
-      : await supabase
-          .from('users')
-          .select('fullname, email, phone')
-          .eq('user_type', 'admin')
-          .order('created_at', { ascending: true })
-          .limit(1)
-          .maybeSingle()
-
-    const contact = car.users.is_premium
-      ? { fullname: car.users.fullname, email: car.users.email, phone: car.users.phone, is_seller: true }
-      : { ...(adminContact || { fullname: 'Kampala Cars', email: '', phone: null }), is_seller: false }
-
-    const isPrivateViewer = sessionData?.userType === 'admin' || sessionData?.userId === car.seller_id
-    const safeCar = !isPrivateViewer && !car.users.is_premium
-      ? { ...car, users: { user_id: car.users.user_id, fullname: car.users.fullname, is_premium: false, profile_picture_url: car.users.profile_picture_url } }
-      : car
-
-    const { count: likesCount } = await supabase
-      .from('car_likes')
-      .select('*', { count: 'exact', head: true })
-      .eq('car_id', id)
-    const visitorId = (await cookies()).get('visitor_id')?.value
-    const liker = sessionData?.userId
-      ? { column: 'user_id', value: sessionData.userId as string }
-      : visitorId
-        ? { column: 'visitor_id', value: visitorId }
-        : null
-    const { data: currentUserLike } = liker
-      ? await supabase
-          .from('car_likes')
-          .select('car_id')
-          .eq('car_id', id)
-          .eq(liker.column, liker.value)
-          .maybeSingle()
-      : { data: null }
-
-    return NextResponse.json({
-      car: {
-        ...safeCar,
-        contact,
-        likes_count: likesCount ?? 0,
-        liked_by_current_user: Boolean(currentUserLike),
-      },
-    })
+    return NextResponse.json({ car })
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -157,6 +94,7 @@ export async function PUT(
         return NextResponse.json({ error: error.message }, { status: 400 })
       }
 
+      expirePublicCars()
       return NextResponse.json({ car })
     }
 
@@ -198,6 +136,7 @@ export async function PUT(
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
+    expirePublicCars()
     return NextResponse.json({ car })
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
@@ -242,6 +181,7 @@ export async function DELETE(
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
+    expirePublicCars()
     return NextResponse.json({ message: 'Car deleted successfully' })
   } catch (error) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

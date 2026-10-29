@@ -1,23 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
+import { carsQuery, withContacts } from "@/lib/cars-server";
 
 // GET /api/cars - Fetch all cars with optional search and filters
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search");
-    const brand_id = searchParams.get("brand_id");
-    const seller_id = searchParams.get("seller_id");
-    const min_price = searchParams.get("min_price");
-    const max_price = searchParams.get("max_price");
-    const min_year = searchParams.get("min_year");
-    const max_year = searchParams.get("max_year");
-    const body_type = searchParams.get("body_type");
-    const fuel_type = searchParams.get("fuel_type");
-    const transmission = searchParams.get("transmission");
-    const max_mileage = searchParams.get("max_mileage");
     const mine = searchParams.get("mine") === "true";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "12");
@@ -29,129 +19,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    let query = supabase
-      .from("cars")
-      .select(
-        `
-        *,
-        car_brands!inner(brand_id, brand_name),
-        users!cars_seller_id_fkey!inner(user_id, fullname, email, phone, is_premium, profile_picture_url)
-      `,
-        { count: "exact" }
-      )
-      .order("created_at", { ascending: false });
-
-    if (mine && sessionData) {
-      query = query.eq("seller_id", sessionData.userId);
-    } else {
-      // Sold cars remain part of the public catalogue; the card identifies them
-      // with its SOLD badge so visitors can still browse completed listings.
-      query = query.eq("approval_status", "approved");
-    }
-
-    // Apply search filters
-    if (search) {
-      query = query.or(
-        `model.ilike.%${search}%,title.ilike.%${search}%,description.ilike.%${search}%`
-      );
-    }
-
-    if (brand_id) {
-      query = query.eq("brand_id", brand_id);
-    }
-
-    if (seller_id && !mine) {
-      query = query.eq("seller_id", seller_id);
-    }
-
-    if (min_price) {
-      query = query.gte("price", parseFloat(min_price));
-    }
-
-    if (max_price) {
-      query = query.lte("price", parseFloat(max_price));
-    }
-
-    if (min_year) {
-      query = query.gte("year", parseInt(min_year));
-    }
-
-    if (max_year) {
-      query = query.lte("year", parseInt(max_year));
-    }
-
-    if (body_type) {
-      query = query.eq("body_type", body_type);
-    }
-
-    if (fuel_type) {
-      query = query.eq("fuel_type", fuel_type);
-    }
-
-    if (transmission) {
-      query = query.eq("transmission", transmission);
-    }
-
-    if (max_mileage) {
-      query = query.lte("mileage", parseInt(max_mileage));
-    }
-
     // Fetch this page and the exact matching total in one request.
     // The count is used by the client to decide whether to enable "Next".
     const {
       data: cars,
       error,
       count,
-    } = await query.range(offset, offset + limit - 1);
+    } = await carsQuery(supabase, searchParams, mine ? sessionData?.userId : undefined).range(offset, offset + limit - 1);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    const adminContact =
-      !mine && cars?.some((car) => !car.users?.is_premium)
-        ? (
-            await supabase
-              .from("users")
-              .select("fullname, email, phone")
-              .eq("user_type", "admin")
-              .order("created_at", { ascending: true })
-              .limit(1)
-              .maybeSingle()
-          ).data
-        : null;
-
-    const carsWithContact = cars?.map((car) => ({
-      ...car,
-      // A standard seller's details must never be exposed by the public API.
-      users:
-        !mine && !car.users?.is_premium
-          ? {
-              user_id: car.users.user_id,
-              fullname: car.users.fullname,
-              is_premium: false,
-              profile_picture_url: car.users.profile_picture_url,
-            }
-          : car.users,
-      contact: car.users?.is_premium
-        ? {
-            fullname: car.users.fullname,
-            email: car.users.email,
-            phone: car.users.phone,
-            is_seller: true,
-          }
-        : {
-            ...(adminContact || {
-              fullname: "Kampala Cars",
-              email: "",
-              phone: null,
-            }),
-            is_seller: false,
-          },
-    }));
-
     return NextResponse.json({
-      cars: carsWithContact,
+      cars: await withContacts(supabase, cars ?? [], { showSellerDetails: mine }),
       pagination: {
         page,
         limit,
@@ -167,7 +48,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/cars - Create a new car listing
 // POST /api/cars - Create a new car listing
 export async function POST(request: NextRequest) {
   try {

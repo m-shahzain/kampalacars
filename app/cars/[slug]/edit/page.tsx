@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/lib/auth-context'
 import { compressImages } from '@/lib/compress-image'
 import { CarBrand, CarWithBrand } from '@/lib/types'
+import { parseCarId } from '@/lib/car-paths'
 
 const initialForm = {
   brand_id: '', model: '', title: '', chassis_number: '', description: '',
@@ -16,7 +17,8 @@ const initialForm = {
 }
 
 export default function EditCarPage() {
-  const { id } = useParams<{ id: string }>()
+  const { slug } = useParams<{ slug: string }>()
+  const id = parseCarId(slug) ?? slug
   const router = useRouter()
   const { user, loading: authLoading } = useAuth()
   const [form, setForm] = useState(initialForm)

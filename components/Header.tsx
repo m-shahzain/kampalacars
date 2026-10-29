@@ -25,7 +25,8 @@ export function Header() {
           <Link href="/" className="flex items-center space-x-3">
             <img src="/logo.webp" alt="Kampala Cars logo" width={56} height={56} className="h-12 w-12 sm:h-14 sm:w-14 rounded-lg shrink-0" />
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Kampala Cars</h1>
+              {/* Not a heading: each page has its own h1. */}
+              <span className="block text-xl font-bold text-gray-900">Kampala Cars</span>
               <p className="text-sm text-gray-500 hidden sm:block">Your trusted car marketplace</p>
             </div>
           </Link>

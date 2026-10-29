@@ -14,17 +14,27 @@ import {
   Loader2,
   Car as CarIcon,
 } from 'lucide-react'
-import { Suspense } from 'react'
+import { Suspense, type ReactNode } from 'react'
+import type { CarsPage as InitialCarsPage } from '@/lib/cars-server'
 
-function CarsContent() {
+type CarsProps = {
+  /** The first page of cars, loaded on the server so they are in the page's HTML. */
+  initialPage: InitialCarsPage
+  /** Shown below the listings. */
+  children?: ReactNode
+}
+
+function CarsContent({ initialPage, children }: CarsProps) {
   const searchParams = useSearchParams()
 
-  const [cars, setCars] = useState<CarWithBrand[]>([])
-  const [loading, setLoading] = useState(true)
+  const [cars, setCars] = useState<CarWithBrand[]>(initialPage.cars)
+  const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [hasMore, setHasMore] = useState(false)
+  const [total, setTotal] = useState(initialPage.total)
+  const [hasMore, setHasMore] = useState(initialPage.hasMore)
+  // The server already loaded the first page for the filters in the address.
+  const hasInitialPage = useRef(true)
   const [showFilters, setShowFilters] = useState(false)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const latestRequest = useRef(0)
@@ -76,6 +86,10 @@ function CarsContent() {
   }, [filters])
 
   useEffect(() => {
+    if (hasInitialPage.current) {
+      hasInitialPage.current = false
+      return
+    }
     fetchCars(1)
   }, [fetchCars])
 
@@ -120,6 +134,11 @@ function CarsContent() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6">
+        <h1 className="mb-3 text-xl font-semibold text-gray-900">
+          Used Cars for Sale in Uganda
+          <span className="ml-2 text-sm font-normal text-gray-500">{total} {total === 1 ? 'car' : 'cars'}</span>
+        </h1>
+
         {/* Search bar */}
         <CarSearchBar
           options={searchOptions}
@@ -282,12 +301,14 @@ function CarsContent() {
             <Button size="sm" variant="outline" onClick={clearFilters}>Clear Filters</Button>
           </div>
         )}
+
+        {children}
       </div>
     </Layout>
   )
 }
 
-export default function CarsPage() {
+export default function CarsPage(props: CarsProps) {
   return (
     <Suspense fallback={
       <Layout>
@@ -296,7 +317,7 @@ export default function CarsPage() {
         </div>
       </Layout>
     }>
-      <CarsContent />
+      <CarsContent {...props} />
     </Suspense>
   )
 }

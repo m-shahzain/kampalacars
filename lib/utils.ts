@@ -26,4 +26,11 @@ export function formatDate(date: string): string {
     month: 'long',
     day: 'numeric',
   }).format(new Date(date))
-} 
+}
+
+/** Shortens text to a whole word within the length, e.g. for meta descriptions. */
+export function truncate(text: string, length: number): string {
+  if (text.length <= length) return text
+  const cut = text.lastIndexOf(' ', length - 1)
+  return `${text.slice(0, cut > 0 ? cut : length - 1).replace(/[\s,.;:–-]+$/, '')}…`
+}

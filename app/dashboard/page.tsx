@@ -6,6 +6,7 @@ import { useAuth } from '@/lib/auth-context'
 import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
 import { CarWithBrand } from '@/lib/types'
+import { carPath } from '@/lib/car-paths'
 import { formatPrice, formatDate } from '@/lib/utils'
 import { Plus, Edit, Trash2, Eye, User, Phone, Mail, Settings, Car as CarIcon, ImagePlus, X } from 'lucide-react'
 import { fallbackToOriginalCarImage, getCarImageSources } from '@/lib/car-image'
@@ -377,7 +378,7 @@ export default function DashboardPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => router.push(`/cars/${car.car_id}`)}
+                        onClick={() => router.push(carPath(car))}
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View

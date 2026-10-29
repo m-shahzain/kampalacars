@@ -1,56 +1,73 @@
 import type { MetadataRoute } from 'next'
-import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
-
-async function getSiteUrl() {
-  const requestHeaders = await headers()
-  const host = requestHeaders.get('x-forwarded-host') ?? requestHeaders.get('host')
-  const protocol = requestHeaders.get('x-forwarded-proto') ?? 'https'
-
-  return (process.env.NEXT_PUBLIC_SITE_URL ?? (host ? `${protocol}://${host}` : 'http://localhost:3000')).replace(/\/$/, '')
-}
+import { brandPath, carPath, modelPath } from '@/lib/car-paths'
+import { getApprovedCars, getMakeCounts, isLongSold, lastChanged } from '@/lib/cars-server'
+import { matchModel } from '@/lib/car-models'
+import { getSiteUrl } from '@/lib/site'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const siteUrl = await getSiteUrl()
   const supabase = await createClient()
-  const { data: cars } = await supabase
-    .from('cars')
-    .select('car_id, seller_id, created_at')
-    .eq('approval_status', 'approved')
-    .order('created_at', { ascending: false })
+  const cars = await getApprovedCars()
+  const makes = await getMakeCounts()
 
-  // Seller pages, newest listing first; select('*') works before the slug column exists.
-  const sellerIds = [...new Set((cars ?? []).map((car) => car.seller_id))]
+  // Newest change per seller, brand and model, so each page's date follows its listings.
+  const latest = new Map<string, Date>()
+  const bump = (key: string, date: Date) => {
+    if (!latest.has(key) || latest.get(key)! < date) latest.set(key, date)
+  }
+  for (const car of cars) {
+    const date = lastChanged(car)
+    const brand = car.car_brands.brand_name
+    bump(`seller:${car.seller_id}`, date)
+    bump(`brand:${brand}`, date)
+    const model = matchModel(brand, car)
+    if (model) bump(`model:${brand}:${model.slug}`, date)
+    bump('all', date)
+  }
+  const newest = latest.get('all') ?? new Date()
+
+  // Seller pages; select('*') works before the slug column exists.
+  const sellerIds = [...new Set(cars.map((car) => car.seller_id))]
   const { data: sellers } = sellerIds.length
     ? await supabase.from('users').select('*').in('user_id', sellerIds).neq('user_type', 'admin')
     : { data: [] }
-  const lastListing = new Map<string, string>()
-  for (const car of cars ?? []) if (!lastListing.has(car.seller_id)) lastListing.set(car.seller_id, car.created_at)
 
   return [
-    {
-      url: siteUrl,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1,
-    },
-    {
-      url: `${siteUrl}/cars`,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 0.9,
-    },
+    { url: siteUrl, lastModified: newest, changeFrequency: 'daily', priority: 1 },
+    { url: `${siteUrl}/cars`, lastModified: newest, changeFrequency: 'daily', priority: 0.9 },
+    // Only makes and models with cars for sale; empty ones are kept out of search results.
+    ...makes.flatMap((make) => [
+      {
+        url: `${siteUrl}${brandPath(make.name)}`,
+        lastModified: latest.get(`brand:${make.name}`) ?? newest,
+        changeFrequency: 'daily' as const,
+        priority: 0.85,
+      },
+      ...make.models.map((model) => ({
+        url: `${siteUrl}${modelPath(make.name, model)}`,
+        lastModified: latest.get(`model:${make.name}:${model.slug}`) ?? newest,
+        changeFrequency: 'daily' as const,
+        priority: 0.85,
+      })),
+    ]),
+    ...cars
+      .filter((car) => !isLongSold(car))
+      .map((car) => ({
+        url: `${siteUrl}${carPath(car)}`,
+        lastModified: lastChanged(car),
+        changeFrequency: 'weekly' as const,
+        priority: car.is_sold ? 0.4 : 0.8,
+        images: car.image_urls?.slice(0, 5),
+      })),
     ...(sellers ?? []).map((seller) => ({
       url: `${siteUrl}/sellers/${seller.slug ?? seller.user_id}`,
-      lastModified: new Date(lastListing.get(seller.user_id) ?? seller.created_at),
+      lastModified: latest.get(`seller:${seller.user_id}`) ?? new Date(seller.created_at),
       changeFrequency: 'weekly' as const,
-      priority: 0.7,
+      priority: 0.6,
     })),
-    ...(cars ?? []).map((car) => ({
-      url: `${siteUrl}/cars/${car.car_id}`,
-      lastModified: new Date(car.created_at),
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    })),
+    { url: `${siteUrl}/about`, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${siteUrl}/contact`, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${siteUrl}/privacy`, changeFrequency: 'yearly', priority: 0.1 },
   ]
 }
