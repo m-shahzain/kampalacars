@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import sharp from 'sharp'
+import { transformImage } from '@/lib/cloudflare-images'
 import { PREVIEW_LOGO } from '@/lib/preview-logo'
 
 // Share previews (WhatsApp, Facebook, X) work best as a 1200x630 JPEG under 300 KB.
@@ -13,11 +13,11 @@ async function photoDataUrl(url: string) {
   try {
     const response = await fetch(url)
     if (!response.ok) return null
-    const jpeg = await sharp(Buffer.from(await response.arrayBuffer()))
-      .rotate()
-      .resize(PREVIEW_WIDTH, PREVIEW_HEIGHT, { fit: 'cover' })
-      .jpeg({ quality: 80 })
-      .toBuffer()
+    const jpeg = await transformImage(
+      await response.arrayBuffer(),
+      { width: PREVIEW_WIDTH, height: PREVIEW_HEIGHT, fit: 'cover' },
+      { format: 'image/jpeg', quality: 80 }
+    )
     return `data:image/jpeg;base64,${jpeg.toString('base64')}`
   } catch {
     return null
@@ -79,7 +79,7 @@ export async function previewImageResponse({ photoUrl, title, highlight, details
     { width: PREVIEW_WIDTH, height: PREVIEW_HEIGHT }
   )
 
-  const jpeg = await sharp(Buffer.from(await png.arrayBuffer())).jpeg({ quality: 82, mozjpeg: true }).toBuffer()
+  const jpeg = await transformImage(await png.arrayBuffer(), {}, { format: 'image/jpeg', quality: 82 })
   return new Response(new Uint8Array(jpeg), {
     headers: {
       'Content-Type': 'image/jpeg',

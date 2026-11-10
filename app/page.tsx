@@ -14,9 +14,9 @@ const HOME_FILTERS = ['search', 'brand_id', 'seller_id', 'min_price', 'max_price
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   return {
-    title: 'Used Cars for Sale in Kampala, Uganda | Kampala Cars',
+    title: 'Japanese Cars for Sale in Kampala, Uganda | Kampala Cars',
     description:
-      'Buy and sell used cars in Kampala and across Uganda. Browse Toyota, Subaru, Mazda, Mercedes-Benz and more with prices, photos and direct seller contacts.',
+      'Buy and sell Japanese cars in Kampala and across Uganda. Browse Toyota, Subaru, Mazda, Mercedes-Benz and more with prices, photos and direct seller contacts.',
     alternates: { canonical: '/' },
     // Filtered views repeat the listings; only the plain page belongs in search results.
     robots: hasFilters(await searchParams, HOME_FILTERS) ? { index: false, follow: true } : undefined,
@@ -52,7 +52,7 @@ export default async function HomePage({ searchParams }: Props) {
               logo: `${siteUrl}/logo.webp`,
               image: `${siteUrl}/logo.webp`,
               telephone: `+${WHATSAPP_NUMBER}`,
-              description: `Online marketplace for buying and selling used cars in Kampala, Uganda. Call or WhatsApp ${PHONE_DISPLAY}.`,
+              description: `Online marketplace for buying and selling Japanese cars in Kampala, Uganda. Call or WhatsApp ${PHONE_DISPLAY}.`,
               address: { '@type': 'PostalAddress', addressLocality: 'Kampala', addressCountry: 'UG' },
               areaServed: { '@type': 'Country', name: 'Uganda' },
             },

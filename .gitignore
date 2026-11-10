@@ -44,3 +44,8 @@ next-env.d.ts
 # image migration output (backups can be large and are private)
 /image-backup/
 /orphans.json
+
+# cloudflare
+.open-next
+.wrangler
+.dev.vars

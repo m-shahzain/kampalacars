@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest) {
       uploadedFileName = `profile-pictures/${sessionData.userId}/${Date.now()}.${extension}`
       const { error: uploadError } = await supabase.storage
         .from('car-images')
-        .upload(uploadedFileName, profilePicture, { contentType: profilePicture.type, upsert: false })
+        .upload(uploadedFileName, profilePicture, { contentType: profilePicture.type, cacheControl: '31536000', upsert: false })
 
       if (uploadError) {
         return NextResponse.json({ error: 'Unable to upload display picture. Please try again.' }, { status: 400 })

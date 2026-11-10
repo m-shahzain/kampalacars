@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import { transformImage } from "@/lib/cloudflare-images";
 
 // Uploads are already compressed to 1600px, so the original serves as the
 // full-size image and only smaller variants are generated.
@@ -20,7 +20,7 @@ export function getCarImageVariantPaths(sourcePath: string) {
 
 type Storage = {
   from(bucket: string): {
-    upload(path: string, file: Buffer, options: { contentType: string; upsert: boolean }): Promise<{ error: { message: string } | null }>;
+    upload(path: string, file: Buffer, options: { contentType: string; cacheControl: string; upsert: boolean }): Promise<{ error: { message: string } | null }>;
   };
 };
 
@@ -35,14 +35,10 @@ export async function createCarImageVariants(
 
   await Promise.all(
     CAR_IMAGE_VARIANTS.map(async ({ width }, index) => {
-      const webp = await sharp(source)
-        .rotate()
-        .resize({ width })
-        .webp({ quality: 75 })
-        .toBuffer();
+      const webp = await transformImage(source, { width }, { format: "image/webp", quality: 75 });
       const { error } = await storage
         .from("car-images")
-        .upload(paths[index], webp, { contentType: "image/webp", upsert });
+        .upload(paths[index], webp, { contentType: "image/webp", cacheControl: "31536000", upsert });
 
       if (error) throw new Error(error.message);
     })

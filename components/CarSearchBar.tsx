@@ -144,16 +144,22 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
       )}
     >
       {/* Keyword */}
-      <div className="relative flex-1 min-w-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
-        <input
-          type="text"
-          aria-label="Search by keyword"
-          placeholder="Search make, model or keyword"
-          value={draft.search}
-          onChange={(event) => update({ search: event.target.value })}
-          className="w-full h-11 pl-10 pr-3 text-sm bg-transparent text-gray-900 placeholder-gray-400 rounded-xl border border-gray-200 md:border-0 focus:outline-none focus:ring-2 focus:ring-gold-600 md:focus:ring-0"
-        />
+      <div className="flex gap-2 flex-1 min-w-0">
+        <div className="relative flex-1 min-w-0">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+          <input
+            type="text"
+            aria-label="Search by keyword"
+            placeholder="Search make, model or keyword"
+            value={draft.search}
+            onChange={(event) => update({ search: event.target.value })}
+            className="w-full h-11 pl-10 pr-3 text-sm bg-transparent text-gray-900 placeholder-gray-400 rounded-xl border border-gray-200 md:border-0 focus:outline-none focus:ring-2 focus:ring-gold-600 md:focus:ring-0"
+          />
+        </div>
+        {/* On phones the button sits beside the keyword box so the bar takes one row less. */}
+        <Button type="submit" aria-label="Search" className="md:hidden h-11 w-11 px-0 rounded-xl shrink-0">
+          <Search className="h-4 w-4" />
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 md:flex md:gap-0 md:divide-x md:divide-gray-200 md:border-l md:border-gray-200">
@@ -305,7 +311,7 @@ export function CarSearchBar({ options, values = EMPTY_SEARCH_VALUES, onSubmit, 
         </div>
       </div>
 
-      <Button type="submit" className="h-11 px-6 rounded-xl md:ml-2 shrink-0">
+      <Button type="submit" className="hidden md:inline-flex h-11 px-6 rounded-xl md:ml-2 shrink-0">
         <Search className="h-4 w-4 mr-2" />
         Search
       </Button>

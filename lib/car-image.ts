@@ -1,5 +1,16 @@
 const STORAGE_PUBLIC_PATH = "/storage/v1/object/public/car-images/";
 
+/**
+ * In production, Supabase car-images URLs are served from the Cloudflare
+ * image cache in worker.ts so each photo leaves Supabase only once per location.
+ */
+function cachedImageUrl(imageUrl: string) {
+  if (process.env.NODE_ENV !== "production") return imageUrl;
+  const pathIndex = imageUrl.indexOf(STORAGE_PUBLIC_PATH);
+  if (pathIndex === -1) return imageUrl;
+  return `/img/car-images/${imageUrl.slice(pathIndex + STORAGE_PUBLIC_PATH.length)}`;
+}
+
 export function fallbackToOriginalCarImage(
   event: React.SyntheticEvent<HTMLImageElement>,
   originalUrl?: string
@@ -12,7 +23,7 @@ export function fallbackToOriginalCarImage(
 
   image.dataset.usedOriginalFallback = "true";
   image.removeAttribute("srcset");
-  image.src = originalUrl;
+  image.src = cachedImageUrl(originalUrl);
   return true;
 }
 
@@ -40,13 +51,13 @@ export function getCarImageSources(imageUrl?: string) {
     );
 
     if (!objectPath || objectPath.startsWith("optimized/")) {
-      return { src: imageUrl };
+      return { src: cachedImageUrl(imageUrl) };
     }
 
-    const base = `${url.origin}${STORAGE_PUBLIC_PATH}optimized/${variantIdFromObjectPath(objectPath)}`;
+    const base = cachedImageUrl(`${url.origin}${STORAGE_PUBLIC_PATH}optimized/${variantIdFromObjectPath(objectPath)}`);
     return {
       src: `${base}-card.webp`,
-      srcSet: `${base}-thumb.webp 300w, ${base}-card.webp 800w, ${imageUrl} 1600w`,
+      srcSet: `${base}-thumb.webp 300w, ${base}-card.webp 800w, ${cachedImageUrl(imageUrl)} 1600w`,
       sizes: "(max-width: 640px) 300px, (max-width: 1024px) 800px, 1600px",
     };
   } catch {

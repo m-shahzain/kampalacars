@@ -45,6 +45,7 @@ export async function POST(request: NextRequest) {
       .from('car-images')
       .upload(fileName, file, {
         contentType: file.type,
+        cacheControl: '31536000',
         upsert: false
       })
 

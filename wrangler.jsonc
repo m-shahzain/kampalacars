@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kampalacars",
+  "main": "worker.ts",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "kampalacars"
+    }
+  ],
+  // Cloudflare Images handles next/image resizing.
+  "images": {
+    "binding": "IMAGES"
+  },
+  // Attached as custom domains on every deploy.
+  "routes": [
+    { "pattern": "kampalacars.com", "custom_domain": true },
+    { "pattern": "www.kampalacars.com", "custom_domain": true }
+  ],
+  // Keep variables added in the Cloudflare dashboard when deploying.
+  "keep_vars": true,
+  // Origin that worker.ts proxies /img/ requests to.
+  "vars": {
+    "SUPABASE_URL": "https://xrmyjdmvoripzegpxnhp.supabase.co"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

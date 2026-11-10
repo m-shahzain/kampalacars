@@ -13,9 +13,9 @@ const PAGE_FILTERS = ['search', 'brand_id', 'seller_id', 'body_type', 'fuel_type
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   return {
-    title: 'Browse All Used Cars for Sale in Uganda | Kampala Cars',
+    title: 'Browse All Japanese Cars for Sale in Uganda | Kampala Cars',
     description:
-      'Search every used car for sale on Kampala Cars. Filter by make, price, year, fuel and body type, and contact sellers in Kampala directly.',
+      'Search every Japanese car for sale on Kampala Cars. Filter by make, price, year, fuel and body type, and contact sellers in Kampala directly.',
     alternates: { canonical: '/cars' },
     // Filtered views repeat the listings; the make and model pages cover the searches people make.
     robots: hasFilters(await searchParams, LISTING_FILTERS) ? { index: false, follow: true } : undefined,

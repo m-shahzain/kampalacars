@@ -107,7 +107,7 @@ function summary({ name, noun, forSale, popular }: Landing) {
     : minPrice === maxPrice ? ` at ${formatPrice(minPrice)}` : `, priced from ${formatPrice(minPrice)} to ${formatPrice(maxPrice)}`
   const fuels = mostCommon(forSale.map((car) => fuelLabel(car.fuel_type).toLowerCase()), 2)
   const sentences = [
-    `${forSale.length} used ${name} ${forSale.length === 1 ? `${noun.one} is` : `${noun.many} are`} for sale in Kampala on Kampala Cars${priceText}.`,
+    `${forSale.length} ${name}${forSale.length === 1 ? `${noun.one} is` : `${noun.many} are`} for sale in Kampala on Kampala Cars${priceText}.`,
     Math.min(...years) === Math.max(...years)
       ? `${forSale.length === 1 ? 'It is a' : 'All are'} ${years[0]} ${forSale.length === 1 ? 'model' : 'models'}${fuels.length ? `, ${list(fuels)}` : ''}.`
       : `Model years range from ${Math.min(...years)} to ${Math.max(...years)}${fuels.length ? `, with ${list(fuels)} options` : ''}.`,

@@ -135,7 +135,7 @@ function CarsContent({ initialPage, children }: CarsProps) {
     <Layout>
       <div className="container mx-auto px-4 py-6">
         <h1 className="mb-3 text-xl font-semibold text-gray-900">
-          Used Cars for Sale in Uganda
+          Japanese Cars for Sale in Uganda
           <span className="ml-2 text-sm font-normal text-gray-500">{total} {total === 1 ? 'car' : 'cars'}</span>
         </h1>
 

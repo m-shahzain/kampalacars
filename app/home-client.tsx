@@ -93,13 +93,13 @@ function HomeContent({ initialPage, children }: HomeProps) {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6">
-        {/* Hero Section */}
-        <div className="text-center mb-8 bg-gray-50 border border-gray-200 rounded-xl py-10 px-4 sm:px-6">
-          <h1 className="text-2xl md:text-3xl font-bold mb-3 text-gray-900">
-            Used Cars for Sale in Kampala, Uganda
+      <div className="container mx-auto px-4 py-4 sm:py-6">
+        {/* Hero Section: kept short on phones so the first cars show without scrolling. */}
+        <div className="text-center mb-5 sm:mb-8 bg-gray-50 border border-gray-200 rounded-xl py-5 sm:py-10 px-3 sm:px-6">
+          <h1 className="text-xl md:text-3xl font-bold mb-3 text-gray-900">
+            Japanese Cars for Sale in Kampala, Uganda
           </h1>
-          <p className="text-gray-500 mb-6 max-w-lg mx-auto text-sm">
+          <p className="hidden sm:block text-gray-500 mb-6 max-w-lg mx-auto text-sm">
             Discover quality vehicles in Kampala. Your trusted marketplace for buying and selling cars.
           </p>
           <CarSearchBar
@@ -109,7 +109,7 @@ function HomeContent({ initialPage, children }: HomeProps) {
             live
             className="max-w-4xl mx-auto"
           />
-          <p className="mt-5 text-sm text-gray-500">
+          <p className="mt-3 sm:mt-5 text-sm text-gray-500">
             Want to sell?{' '}
             <Link href="/upload" className="font-medium text-gold-700 hover:underline">
               List your car
@@ -139,6 +139,12 @@ function HomeContent({ initialPage, children }: HomeProps) {
           </div>
         ) : cars.length > 0 ? (
           <>
+            {!hasFilters && (
+              <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                Latest cars
+                <span className="ml-2 text-sm font-normal text-gray-500">{total} listed</span>
+              </h2>
+            )}
             <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8 transition-opacity ${loading ? 'opacity-50' : ''}`} aria-busy={loading}>
               {cars.map((car, index) => (
                 <CarCard key={car.car_id} car={car} priority={index < 4} />
