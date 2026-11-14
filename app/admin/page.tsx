@@ -15,7 +15,8 @@ import {
   Shield,
   Activity,
   ChevronRight,
-  Settings
+  Settings,
+  KeyRound
 } from 'lucide-react'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
@@ -151,6 +152,12 @@ export default function AdminDashboard() {
               <Button variant="outline">
                 <Car className="h-4 w-4 mr-2" />
                 Manage Cars
+              </Button>
+            </Link>
+            <Link href="/admin/key-bookings">
+              <Button variant="outline">
+                <KeyRound className="h-4 w-4 mr-2" />
+                Key Bookings
               </Button>
             </Link>
           </div>

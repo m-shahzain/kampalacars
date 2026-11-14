@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth-context";
 import { WhatsAppChatButton } from "@/components/WhatsAppChatButton";
+import { KeyServiceButton } from "@/components/KeyServiceButton";
 
 export const metadata: Metadata = {
   // Lets pages use relative links in their share previews.
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className="antialiased">
         <AuthProvider>
           {children}
+          <KeyServiceButton />
           <WhatsAppChatButton />
         </AuthProvider>
       </body>

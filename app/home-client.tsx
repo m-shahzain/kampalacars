@@ -114,6 +114,11 @@ function HomeContent({ initialPage, children }: HomeProps) {
             <Link href="/upload" className="font-medium text-gold-700 hover:underline">
               List your car
             </Link>
+            <span className="mx-2 text-gray-300">·</span>
+            Need a car key?{' '}
+            <Link href="/services/car-keys" className="font-medium text-gold-700 hover:underline">
+              Book key service
+            </Link>
           </p>
         </div>
 
