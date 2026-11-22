@@ -228,6 +228,9 @@ export async function CarDetailsPage({ id, slug }: { id: string; slug: string })
 
           <div className="lg:col-span-1">
             <CarContactCard
+              carId={car.car_id}
+              carHeading={heading}
+              sellerId={car.seller_id}
               price={price}
               contact={car.contact}
               sellerName={car.users?.fullname ?? ''}

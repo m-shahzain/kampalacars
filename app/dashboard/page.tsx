@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
+import { NotificationPrompt } from '@/components/NotificationPrompt'
 import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
 import { CarWithBrand } from '@/lib/types'
@@ -162,6 +163,7 @@ export default function DashboardPage() {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-8">
+        <NotificationPrompt className="mb-6" />
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>

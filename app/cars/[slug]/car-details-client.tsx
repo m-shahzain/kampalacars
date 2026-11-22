@@ -3,9 +3,11 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Heart, Mail, Phone, Share2, User } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Heart, Loader2, Mail, MessageSquare, Phone, Share2, User } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { fallbackToOriginalCarImage, getCarImageSources } from '@/lib/car-image'
+import { useAuth } from '@/lib/auth-context'
 
 export function CarGallery({ images, heading, isSold }: { images: string[]; heading: string; isSold: boolean }) {
   const [activeImage, setActiveImage] = useState(0)
@@ -121,27 +123,55 @@ export function CarActions({ carId, shareText, likesCount, liked }: {
 
 type Contact = { fullname: string; email: string; phone?: string | null; is_seller: boolean }
 
-export function CarContactCard({ price, contact, sellerName, sellerPicture, sellerHref }: {
+export function CarContactCard({ carId, carHeading, sellerId, price, contact, sellerName, sellerPicture, sellerHref }: {
+  carId: string
+  carHeading: string
+  sellerId: string
   price: string
   contact: Contact
   sellerName: string
   sellerPicture?: string | null
   sellerHref: string
 }) {
+  const { user } = useAuth()
+  const router = useRouter()
   const [sellerImageError, setSellerImageError] = useState(false)
   const [showContactForm, setShowContactForm] = useState(false)
-  const [contactForm, setContactForm] = useState({ name: '', email: '', phone: '', message: '' })
+  const [message, setMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState('')
   const who = contact.is_seller ? 'Seller' : 'Kampala Cars'
+  const isOwnListing = user?.user_id === sellerId
+  // Admins answer the messages for standard sellers' cars, so they can't message those.
+  const canMessage = !isOwnListing && !(user?.user_type === 'admin' && !contact.is_seller)
+
+  const openContactForm = () => {
+    if (!user) {
+      router.push(`/auth/login?next=${encodeURIComponent(window.location.pathname)}`)
+      return
+    }
+    if (!showContactForm && !message) setMessage(`Hi, is the ${carHeading} still available?`)
+    setShowContactForm(!showContactForm)
+  }
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would send an email or message to the seller
-    alert('Message sent to seller successfully!')
-    setShowContactForm(false)
-    setContactForm({ name: '', email: '', phone: '', message: '' })
+    setSending(true)
+    setSendError('')
+    try {
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ car_id: carId, body: message }),
+      })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'Message not sent. Please try again.')
+      router.push(`/messages?c=${data.conversation_id}`)
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : 'Message not sent. Please try again.')
+      setSending(false)
+    }
   }
-
-  const inputClass = 'w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600'
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-5 sticky top-4">
@@ -190,10 +220,16 @@ export function CarContactCard({ price, contact, sellerName, sellerPicture, sell
       </div>
 
       <div className="space-y-3">
-        <Button className="w-full" onClick={() => setShowContactForm(!showContactForm)}>
-          <Mail className="h-4 w-4 mr-2" />
-          Contact {who}
-        </Button>
+        {isOwnListing ? (
+          <p className="rounded-md bg-gray-50 px-3 py-2 text-center text-sm text-gray-600">
+            This is your listing. Buyers' messages appear in <Link href="/messages" className="font-medium text-gold-700 hover:underline">Messages</Link>.
+          </p>
+        ) : canMessage && (
+          <Button className="w-full" onClick={openContactForm}>
+            <MessageSquare className="h-4 w-4 mr-2" />
+            Contact {who}
+          </Button>
+        )}
         {contact.phone && (
           <a href={`tel:${contact.phone}`} className="block">
             <Button variant="outline" className="w-full">
@@ -207,17 +243,26 @@ export function CarContactCard({ price, contact, sellerName, sellerPicture, sell
         </Link>
       </div>
 
-      {showContactForm && (
-        <form onSubmit={handleContactSubmit} className="mt-6 space-y-4 border-t pt-4">
-          <input type="text" placeholder="Your Name" value={contactForm.name} required className={inputClass}
-            onChange={(e) => setContactForm({ ...contactForm, name: e.target.value })} />
-          <input type="email" placeholder="Your Email" value={contactForm.email} required className={inputClass}
-            onChange={(e) => setContactForm({ ...contactForm, email: e.target.value })} />
-          <input type="tel" placeholder="Your Phone (Optional)" value={contactForm.phone} className={inputClass}
-            onChange={(e) => setContactForm({ ...contactForm, phone: e.target.value })} />
-          <textarea placeholder="Your Message" rows={3} value={contactForm.message} required className={inputClass}
-            onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })} />
-          <Button type="submit" className="w-full">Send Message</Button>
+      {showContactForm && canMessage && user && (
+        <form onSubmit={handleContactSubmit} className="mt-6 space-y-3 border-t pt-4">
+          <label htmlFor="contact-message" className="block text-sm font-medium text-gray-700">
+            Message {contact.is_seller ? sellerName || 'the seller' : 'Kampala Cars'}
+          </label>
+          <textarea
+            id="contact-message"
+            rows={4}
+            value={message}
+            required
+            maxLength={2000}
+            onChange={(e) => setMessage(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-md text-gray-900 focus:outline-none focus:ring-2 focus:ring-gold-600"
+          />
+          {sendError && <p className="text-sm text-red-600">{sendError}</p>}
+          <Button type="submit" className="w-full" disabled={sending || !message.trim()}>
+            {sending ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <MessageSquare className="h-4 w-4 mr-2" />}
+            Send Message
+          </Button>
+          <p className="text-xs text-gray-500">The reply will appear in your Messages.</p>
         </form>
       )}
     </div>

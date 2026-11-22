@@ -3,12 +3,55 @@
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth-context'
 import { Button } from './ui/Button'
-import { Search, User, LogOut, Plus, Shield } from 'lucide-react'
-import { useState } from 'react'
+import { Search, User, LogOut, Plus, Shield, MessageSquare } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { MESSAGES_CHANGED } from '@/lib/messages-events'
+import { syncPush, unlinkPush } from '@/lib/push-client'
+
+const UNREAD_POLL_MS = 30000
+
+/** Unread message count for the signed-in user, refreshed every 30s, on focus and after reading. */
+function useUnreadCount(signedIn: boolean) {
+  const [unread, setUnread] = useState(0)
+  useEffect(() => {
+    if (!signedIn) return setUnread(0)
+    let active = true
+    const refresh = () => {
+      if (document.visibilityState !== 'visible') return
+      fetch('/api/messages/unread', { cache: 'no-store' })
+        .then((response) => (response.ok ? response.json() : { unread: 0 }))
+        .then((data) => { if (active) setUnread(Number(data.unread) || 0) })
+        .catch(() => {})
+    }
+    refresh()
+    const timer = setInterval(refresh, UNREAD_POLL_MS)
+    window.addEventListener(MESSAGES_CHANGED, refresh)
+    document.addEventListener('visibilitychange', refresh)
+    return () => {
+      active = false
+      clearInterval(timer)
+      window.removeEventListener(MESSAGES_CHANGED, refresh)
+      document.removeEventListener('visibilitychange', refresh)
+    }
+  }, [signedIn])
+  return unread
+}
 
 export function Header() {
   const { user, signOut } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
+  const unread = useUnreadCount(Boolean(user))
+  const userId = user?.user_id
+
+  // Keep this browser's notifications linked to whoever is signed in.
+  useEffect(() => {
+    if (userId) syncPush()
+  }, [userId])
+
+  const handleSignOut = async () => {
+    await unlinkPush()
+    await signOut()
+  }
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +99,17 @@ export function Header() {
             </Link>
             {user ? (
               <>
+                <Link href="/messages" className="relative" aria-label={unread ? `Messages, ${unread} unread` : 'Messages'}>
+                  <Button variant="outline" size="sm" className="text-gray-700 border-gray-300 hover:bg-gray-50">
+                    <MessageSquare className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Messages</span>
+                  </Button>
+                  {unread > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-5 rounded-full bg-red-600 px-1 text-center text-xs font-semibold leading-5 text-white">
+                      {unread > 99 ? '99+' : unread}
+                    </span>
+                  )}
+                </Link>
                 {user.user_type === 'admin' ? (
                   <Link href="/admin">
                     <Button variant="outline" size="sm" className="text-red-600 border-red-300 hover:bg-red-50">
@@ -82,7 +136,7 @@ export function Header() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => signOut()}
+                  onClick={handleSignOut}
                   className="text-gray-700 border-gray-300 hover:bg-gray-50"
                 >
                   <LogOut className="h-4 w-4 mr-2" />

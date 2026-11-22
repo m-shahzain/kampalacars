@@ -16,14 +16,19 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [needsVerification, setNeedsVerification] = useState(false)
+  // Where to go after signing in, e.g. back to the car the buyer wanted to message.
+  const [next, setNext] = useState('/dashboard')
   
   const { signIn, verifyEmailCode, resendEmailCode } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    if (new URLSearchParams(window.location.search).get('error') === 'google') {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('error') === 'google') {
       setError('Google sign-in did not finish. Please try again.')
     }
+    const target = params.get('next')
+    if (target && target.startsWith('/') && !target.startsWith('//')) setNext(target)
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -39,7 +44,7 @@ export default function LoginPage() {
       // The account exists but the email was never confirmed; a code was just sent.
       setNeedsVerification(true)
     } else {
-      router.push('/dashboard')
+      router.push(next)
     }
     
     setLoading(false)
@@ -47,7 +52,7 @@ export default function LoginPage() {
 
   const handleVerify = async (code: string) => {
     const { error } = await verifyEmailCode(email.trim(), code)
-    if (!error) router.push('/dashboard')
+    if (!error) router.push(next)
     return { error }
   }
 
@@ -71,7 +76,7 @@ export default function LoginPage() {
               />
             ) : (
             <>
-            <GoogleSignInButton onError={setError} />
+            <GoogleSignInButton next={next} onError={setError} />
             <OrDivider />
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div>
