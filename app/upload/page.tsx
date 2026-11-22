@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/Button";
 import { CarBrand } from "@/lib/types";
+import { useBodyTypes } from "@/lib/use-body-types";
 import {
   ACCEPTED_IMAGE_TYPES,
   MAX_SOURCE_IMAGE_BYTES,
@@ -115,6 +116,7 @@ async function getResponseData(response: Response) {
 }
 
 export default function UploadPage() {
+  const bodyTypes = useBodyTypes()
   const [brands, setBrands] = useState<CarBrand[]>([]);
   const [formData, setFormData] = useState<FormData>(DEFAULT_FORM_DATA);
 
@@ -648,15 +650,9 @@ export default function UploadPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 >
                   <option value="">Select body type</option>
-                  <option value="sedan">Sedan</option>
-                  <option value="hatchback">Hatchback</option>
-                  <option value="suv">SUV</option>
-                  <option value="coupe">Coupe</option>
-                  <option value="convertible">Convertible</option>
-                  <option value="wagon">Wagon</option>
-                  <option value="pickup">Pickup</option>
-                  <option value="van">Van</option>
-                  <option value="minivan">Minivan</option>
+                  {bodyTypes.map((type) => (
+                    <option key={type.slug} value={type.slug}>{type.name}</option>
+                  ))}
                 </select>
               </div>
 

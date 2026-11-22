@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/auth-context'
 import { compressImages } from '@/lib/compress-image'
 import { CarBrand, CarWithBrand } from '@/lib/types'
 import { parseCarId } from '@/lib/car-paths'
+import { useBodyTypes } from '@/lib/use-body-types'
 
 const initialForm = {
   brand_id: '', model: '', title: '', chassis_number: '', description: '',
@@ -17,6 +18,7 @@ const initialForm = {
 }
 
 export default function EditCarPage() {
+  const bodyTypes = useBodyTypes()
   const { slug } = useParams<{ slug: string }>()
   const id = parseCarId(slug) ?? slug
   const router = useRouter()
@@ -110,7 +112,7 @@ export default function EditCarPage() {
         <Field label="Chassis number"><input required value={form.chassis_number} onChange={e => setForm({...form, chassis_number: e.target.value})}/></Field>
         <Field label="Year"><input required type="number" value={form.year} onChange={e => setForm({...form, year: Number(e.target.value)})}/></Field>
         <Field label="Price (UGX)"><input required min="1" type="number" value={form.price} onChange={e => setForm({...form, price: e.target.value})}/></Field>
-        <Field label="Body type"><select value={form.body_type} onChange={e => setForm({...form, body_type: e.target.value})}>{['sedan','hatchback','suv','coupe','convertible','wagon','pickup','van','minivan'].map(v => <option key={v}>{v}</option>)}</select></Field>
+        <Field label="Body type"><select value={form.body_type} onChange={e => setForm({...form, body_type: e.target.value})}>{bodyTypes.map(type => <option key={type.slug} value={type.slug}>{type.name}</option>)}</select></Field>
         <Field label="Fuel type"><select value={form.fuel_type} onChange={e => setForm({...form, fuel_type: e.target.value})}>{['gasoline','diesel','electric','hybrid','cng','lpg'].map(v => <option key={v}>{v}</option>)}</select></Field>
         <Field label="Transmission"><select value={form.transmission} onChange={e => setForm({...form, transmission: e.target.value})}>{['automatic','manual','cvt','semi-automatic'].map(v => <option key={v}>{v}</option>)}</select></Field>
         <Field label="Drive type"><select value={form.drive_type} onChange={e => setForm({...form, drive_type: e.target.value})}><option value="2wd">2WD</option><option value="4wd">4WD</option></select></Field>

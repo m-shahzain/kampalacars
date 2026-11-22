@@ -25,7 +25,8 @@ export type Car = {
   title: string
   chassis_number?: string
   description?: string
-  body_type: 'sedan' | 'hatchback' | 'suv' | 'coupe' | 'convertible' | 'wagon' | 'pickup' | 'van' | 'minivan'
+  /** A body_types.slug, e.g. 'suv'. Admins can add more, so it is not a fixed list. */
+  body_type: string
   fuel_type: 'gasoline' | 'diesel' | 'electric' | 'hybrid' | 'cng' | 'lpg'
   year: number
   price: number

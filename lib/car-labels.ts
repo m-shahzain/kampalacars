@@ -1,4 +1,5 @@
 import type { Car } from '@/lib/types'
+import { bodyTypeName, type BodyType } from '@/lib/body-types'
 
 // Words buyers in Uganda use, e.g. "Petrol" rather than "gasoline".
 const FUEL: Record<Car['fuel_type'], string> = {
@@ -7,13 +8,10 @@ const FUEL: Record<Car['fuel_type'], string> = {
 const TRANSMISSION: Record<Car['transmission'], string> = {
   automatic: 'Automatic', manual: 'Manual', cvt: 'CVT', 'semi-automatic': 'Semi-automatic',
 }
-const BODY: Record<Car['body_type'], string> = {
-  sedan: 'Sedan', hatchback: 'Hatchback', suv: 'SUV', coupe: 'Coupe', convertible: 'Convertible',
-  wagon: 'Station wagon', pickup: 'Pickup', van: 'Van', minivan: 'Minivan',
-}
 
 export const fuelLabel = (fuel?: string | null) => (fuel ? FUEL[fuel as Car['fuel_type']] ?? fuel : '')
 export const transmissionLabel = (value?: string | null) => (value ? TRANSMISSION[value as Car['transmission']] ?? value : '')
-export const bodyLabel = (body?: string | null) => (body ? BODY[body as Car['body_type']] ?? body : '')
+/** Pass the live list (getBodyTypes) to show names admins have added or changed. */
+export const bodyLabel = (body?: string | null, types?: BodyType[]) => bodyTypeName(body, types)
 export const driveLabel = (drive?: string | null) => (drive ? drive.toUpperCase() : '')
 export const mileageLabel = (mileage?: number | null) => (mileage ? `${Number(mileage).toLocaleString('en-UG')} km` : '')

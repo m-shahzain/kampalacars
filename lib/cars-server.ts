@@ -7,6 +7,7 @@ import { createPublicClient } from '@/lib/supabase/public'
 import { getSession } from '@/lib/session'
 import { matchModel, slugify, type CarModel } from '@/lib/car-models'
 import type { CarBrand, CarWithBrand } from '@/lib/types'
+import { DEFAULT_BODY_TYPES, type BodyType } from '@/lib/body-types'
 
 export const CAR_SELECT = `
   *,
@@ -159,6 +160,12 @@ export function expirePublicCars() {
 export const getBrands = sharedCache('brands', async (): Promise<CarBrand[]> => {
   const { data } = await createPublicClient().from('car_brands').select('*').order('brand_name')
   return data ?? []
+})
+
+/** Body types sellers can choose, alphabetical. The built-in list until the body_types table exists. */
+export const getBodyTypes = sharedCache('body-types', async (): Promise<BodyType[]> => {
+  const { data, error } = await createPublicClient().from('body_types').select('slug, name').order('name')
+  return !error && data?.length ? data : DEFAULT_BODY_TYPES
 })
 
 export const getBrandBySlug = cache(async (slug: string) => {

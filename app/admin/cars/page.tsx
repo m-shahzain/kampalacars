@@ -7,6 +7,8 @@ import { Layout } from '@/components/Layout'
 import { Button } from '@/components/ui/Button'
 import { CarWithBrand } from '@/lib/types'
 import { carPath } from '@/lib/car-paths'
+import { useBodyTypes } from '@/lib/use-body-types'
+import { bodyTypeName } from '@/lib/body-types'
 import { compressImages } from '@/lib/compress-image'
 import { 
   Car, 
@@ -52,6 +54,7 @@ interface EditCarForm {
 }
 
 export default function AdminCarsPage() {
+  const bodyTypes = useBodyTypes()
   const [cars, setCars] = useState<CarWithBrand[]>([])
   const [loading, setLoading] = useState(true)
   const [deleting, setDeleting] = useState<string | null>(null)
@@ -416,7 +419,7 @@ export default function AdminCarsPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            <div>{car.body_type} • {car.fuel_type}</div>
+                            <div>{bodyTypeName(car.body_type, bodyTypes)} • {car.fuel_type}</div>
                             <div className="text-gray-500">{car.transmission}</div>
                             {car.mileage && (
                               <div className="text-gray-500">{car.mileage.toLocaleString()} km</div>
@@ -634,15 +637,9 @@ export default function AdminCarsPage() {
                     onChange={(e) => setEditing({ ...editing, body_type: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                   >
-                    <option value="sedan">Sedan</option>
-                    <option value="hatchback">Hatchback</option>
-                    <option value="suv">SUV</option>
-                    <option value="coupe">Coupe</option>
-                    <option value="convertible">Convertible</option>
-                    <option value="wagon">Wagon</option>
-                    <option value="pickup">Pickup</option>
-                    <option value="van">Van</option>
-                    <option value="minivan">Minivan</option>
+                    {bodyTypes.map((type) => (
+                      <option key={type.slug} value={type.slug}>{type.name}</option>
+                    ))}
                   </select>
                 </div>
                 <div>

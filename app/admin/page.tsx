@@ -305,7 +305,7 @@ export default function AdminDashboard() {
         {/* Quick Actions */}
         <div className="mt-8 bg-white rounded-lg shadow p-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Link href="/admin/users">
               <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
                 <div className="flex items-center justify-between">
@@ -342,6 +342,19 @@ export default function AdminDashboard() {
                   <ChevronRight className="h-4 w-4 text-gray-400" />
                 </div>
                 <p className="text-sm text-gray-500 mt-1">Add and edit car brands</p>
+              </div>
+            </Link>
+
+            <Link href="/admin/body-types">
+              <div className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <CarIcon className="h-5 w-5 text-gold-700 mr-3" />
+                    <span className="font-medium text-gray-900">Manage Body Types</span>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400" />
+                </div>
+                <p className="text-sm text-gray-500 mt-1">Add and edit body types</p>
               </div>
             </Link>
           </div>

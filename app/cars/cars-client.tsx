@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/Button'
 import { CarSearchBar, CarSearchValues, priceLabel, useSearchOptions } from '@/components/CarSearchBar'
 import { CarWithBrand } from '@/lib/types'
 import { useFiltersInUrl } from '@/lib/use-filters-in-url'
+import { useBodyTypes } from '@/lib/use-body-types'
+import { bodyTypeName } from '@/lib/body-types'
 import {
   SlidersHorizontal,
   X,
@@ -25,6 +27,7 @@ type CarsProps = {
 }
 
 function CarsContent({ initialPage, children }: CarsProps) {
+  const bodyTypes = useBodyTypes()
   const searchParams = useSearchParams()
 
   const [cars, setCars] = useState<CarWithBrand[]>(initialPage.cars)
@@ -179,15 +182,7 @@ function CarsContent({ initialPage, children }: CarsProps) {
                 <label className="block text-xs text-gray-500 mb-1">Body Type</label>
                 <select value={filters.body_type} onChange={e => setFilters({ ...filters, body_type: e.target.value })} className={selectClass}>
                   <option value="">All Types</option>
-                  <option value="sedan">Sedan</option>
-                  <option value="hatchback">Hatchback</option>
-                  <option value="suv">SUV</option>
-                  <option value="coupe">Coupe</option>
-                  <option value="convertible">Convertible</option>
-                  <option value="wagon">Wagon</option>
-                  <option value="pickup">Pickup</option>
-                  <option value="van">Van</option>
-                  <option value="minivan">Minivan</option>
+                  {bodyTypes.map(type => <option key={type.slug} value={type.slug}>{type.name}</option>)}
                 </select>
               </div>
 
@@ -263,8 +258,8 @@ function CarsContent({ initialPage, children }: CarsProps) {
               </span>
             )}
             {filters.body_type && (
-              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold-50 text-gold-700 text-xs rounded-md capitalize">
-                {filters.body_type}
+              <span className="inline-flex items-center gap-1 px-2 py-1 bg-gold-50 text-gold-700 text-xs rounded-md">
+                {bodyTypeName(filters.body_type, bodyTypes)}
                 <button onClick={() => setFilters({ ...filters, body_type: '' })}><X className="h-3 w-3" /></button>
               </span>
             )}

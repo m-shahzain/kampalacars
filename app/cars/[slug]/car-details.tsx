@@ -6,7 +6,7 @@ import { Layout } from '@/components/Layout'
 import { Breadcrumbs, type Crumb } from '@/components/Breadcrumbs'
 import { CarCard } from '@/components/CarCard'
 import { JsonLd } from '@/components/JsonLd'
-import { getBrandListings, getCarDetails, isLongSold, type CarDetails } from '@/lib/cars-server'
+import { getBodyTypes, getBrandListings, getCarDetails, isLongSold, type CarDetails } from '@/lib/cars-server'
 import { matchModel, modelName } from '@/lib/car-models'
 import { brandOf, brandPath, carHeading, carPath, modelPath, sellerHref } from '@/lib/car-paths'
 import { bodyLabel, driveLabel, fuelLabel, mileageLabel, transmissionLabel } from '@/lib/car-labels'
@@ -72,7 +72,7 @@ async function carJsonLd(car: CarDetails) {
     brand: { '@type': 'Brand', name: brand },
     model: modelName(brand, car) || undefined,
     vehicleModelDate: String(car.year),
-    bodyType: bodyLabel(car.body_type) || undefined,
+    bodyType: bodyLabel(car.body_type, await getBodyTypes()) || undefined,
     fuelType: fuelLabel(car.fuel_type) || undefined,
     vehicleTransmission: transmissionLabel(car.transmission) || undefined,
     driveWheelConfiguration: car.drive_type === '4wd' ? 'https://schema.org/FourWheelDriveConfiguration' : undefined,
@@ -115,7 +115,7 @@ export async function CarDetailsPage({ id, slug }: { id: string; slug: string })
   const brand = brandOf(car)
   const model = matchModel(brand, car)
   const heading = carHeading(car)
-  const related = await relatedCars(car)
+  const [related, bodyTypes] = await Promise.all([relatedCars(car), getBodyTypes()])
   const price = car.is_sold ? 'SOLD' : formatPrice(Number(car.price))
   const crumbs: Crumb[] = [
     { name: 'Cars', href: '/cars' },
@@ -127,7 +127,7 @@ export async function CarDetailsPage({ id, slug }: { id: string; slug: string })
     ['Make', brand],
     ['Model', modelName(brand, car)],
     ['Year', String(car.year)],
-    ['Body type', bodyLabel(car.body_type)],
+    ['Body type', bodyLabel(car.body_type, bodyTypes)],
     ['Fuel', fuelLabel(car.fuel_type)],
     ['Transmission', transmissionLabel(car.transmission)],
     ['Drive', driveLabel(car.drive_type)],
