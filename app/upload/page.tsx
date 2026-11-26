@@ -723,7 +723,7 @@ export default function UploadPage() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gold-600"
                 >
                   {Array.from(
-                    { length: 30 },
+                    { length: new Date().getFullYear() - 1980 + 1 },
                     (_, i) => new Date().getFullYear() - i
                   ).map((year) => (
                     <option key={year} value={year}>
